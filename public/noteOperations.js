@@ -74,10 +74,10 @@ function saveNote(note) {
     updateCanvasSize();
 }
 
-function editNote(e) {
-    const note = e.target.closest('.note');
+function editNote(note) {
     if (!note) return;
     const pre = note.querySelector('pre');
+    if (!pre) return;
     const text = pre.textContent;
 
     const input = document.createElement(text.includes('\n') ? 'textarea' : 'input');

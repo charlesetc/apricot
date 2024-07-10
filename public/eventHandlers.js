@@ -1,29 +1,5 @@
 // eventHandlers.js
 
-function handleCanvasMouseMove(e) {
-    // Account for scroll offset
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
-    if (isDragging) {
-        dragSelectedNotes(e);
-    } else if (e.buttons === 1 && e.target === canvas) {
-        const dx = (e.clientX + scrollLeft) - mouseDownPos.x;
-        const dy = (e.clientY + scrollTop) - mouseDownPos.y;
-        if (Math.sqrt(dx*dx + dy*dy) > CLICK_THRESHOLD) {
-            isSelecting = true;
-            if (!selectionBox) {
-                createSelectionBox(mouseDownPos.x, mouseDownPos.y);
-            }
-        }
-    }
-    
-    if (isSelecting && selectionBox) {
-        updateSelectionBox(e.clientX + scrollLeft, e.clientY + scrollTop);
-    }
-}
-
-
 function handleCanvasMouseDown(e) {
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
@@ -59,6 +35,28 @@ function handleCanvasMouseDown(e) {
     }
 }
 
+function handleCanvasMouseMove(e) {
+    // Account for scroll offset
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    if (isDragging) {
+        dragSelectedNotes(e);
+    } else if (e.buttons === 1 && e.target === canvas) {
+        const dx = (e.clientX + scrollLeft) - mouseDownPos.x;
+        const dy = (e.clientY + scrollTop) - mouseDownPos.y;
+        if (Math.sqrt(dx*dx + dy*dy) > CLICK_THRESHOLD) {
+            isSelecting = true;
+            if (!selectionBox) {
+                createSelectionBox(mouseDownPos.x, mouseDownPos.y);
+            }
+        }
+    }
+    
+    if (isSelecting && selectionBox) {
+        updateSelectionBox(e.clientX + scrollLeft, e.clientY + scrollTop);
+    }
+}
 
 function handleCanvasMouseUp(e) {
     // Account for scroll offset
@@ -81,13 +79,10 @@ function handleCanvasMouseUp(e) {
         const dx = (e.clientX + scrollLeft) - mouseDownPos.x;
         const dy = (e.clientY + scrollTop) - mouseDownPos.y;
         if (Math.sqrt(dx*dx + dy*dy) <= CLICK_THRESHOLD) {
-            createNote(e.clientX + scrollLeft, e.clientY + scrollTop);
+            createNote(e.clientX, e.clientY);
         }
     }
-    
-    // Always clear the selection box when the mouse button is released
     clearSelectionBox();
-    isSelecting = false;
 }
 
 function handleKeyDown(e) {
@@ -132,7 +127,6 @@ function handleInput(e) {
         }
     }
 }
-
 // Make all functions global
 window.handleCanvasMouseDown = handleCanvasMouseDown;
 window.handleCanvasMouseMove = handleCanvasMouseMove;
