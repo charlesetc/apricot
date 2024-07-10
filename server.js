@@ -51,6 +51,77 @@ app.get('/api/canvases', (req, res) => {
     });
 });
 
+app.put('/api/canvases/:id', (req, res) => {
+    const { id } = req.params;
+    const { name } = req.body;
+
+    // Validate input
+    if (!name || name.trim() === '') {
+        return res.status(400).json({ error: 'Project name cannot be empty' });
+    }
+
+    // Update the project in your database
+    const query = 'UPDATE canvases SET name = ? WHERE id = ?';
+    const values = [name, id];
+
+    db.run(query, values, function(error) {
+        if (error) {
+            console.error('Error updating project:', error.message);
+            return res.status(500).json({ error: 'An error occurred while updating the project' });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        // Fetch the updated project
+        db.get('SELECT * FROM canvases WHERE id = ?', [id], (err, row) => {
+            if (err) {
+                console.error('Error fetching updated project:', err.message);
+                return res.status(500).json({ error: 'Project updated but unable to fetch updated data' });
+            }
+
+            res.json({
+                message: 'Project updated successfully',
+                project: row
+            });
+        });
+    });
+});
+
+app.delete('/api/canvases/:id', (req, res) => {
+    const { id } = req.params;
+
+    // First, delete all notes associated with this canvas
+    const deleteNotesQuery = 'DELETE FROM notes WHERE canvas_id = ?';
+    db.run(deleteNotesQuery, [id], function(error) {
+        if (error) {
+            console.error('Error deleting associated notes:', error.message);
+            return res.status(500).json({ error: 'An error occurred while deleting associated notes' });
+        }
+
+        // Now delete the canvas itself
+        const deleteCanvasQuery = 'DELETE FROM canvases WHERE id = ?';
+        db.run(deleteCanvasQuery, [id], function(error) {
+            if (error) {
+                console.error('Error deleting canvas:', error.message);
+                return res.status(500).json({ error: 'An error occurred while deleting the canvas' });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ error: 'Canvas not found' });
+            }
+
+            res.json({
+                message: 'Canvas and associated notes deleted successfully',
+                deletedCanvasId: id,
+                notesDeleted: this.changes
+            });
+        });
+    });
+});
+
+
 // Note endpoints
 app.post('/api/notes', (req, res) => {
     const { id, canvas_id, text, x, y } = req.body;
