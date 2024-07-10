@@ -101,6 +101,8 @@ function handleKeyDown(e) {
         }
     } else if (e.key === "Escape") {
         clearSelection();
+    } else if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault(); // Prevent browser save
     }
 }
 
