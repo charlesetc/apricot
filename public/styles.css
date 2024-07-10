@@ -5,6 +5,8 @@ html {
     height: 100%;
     font-size: 14px;
         font-family: 'Iosevka Medium', 'Courier New', Courier, monospace;
+        min-width: 500vw;
+            min-height: 500vh;
 }
 
 .container {
