@@ -3,7 +3,8 @@ html {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: Arial, sans-serif;
+    font-size: 14px;
+        font-family: 'Iosevka Medium', 'Courier New', Courier, monospace;
 }
 
 .container {
@@ -21,17 +22,25 @@ html {
 
 .note {
     position: absolute;
-    background-color: #ffff88;
-    border: 1px solid #e6e6e6;
-    padding: 5px;
-    min-width: 100px;
-    cursor: move;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #f0f0f0;
+        /* Light grey background */
+        border: 1px solid #d0d0d0;
+        /* Slightly darker border */
+        border-radius: 4px;
+        /* Smaller rounded corners */
+        padding: 3px 5px;
+        /* Reduced padding */
+        min-width: 120px;
+        cursor: move;
+        box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+            font-family: 'Iosevka Medium', 'Courier New', Courier, monospace;
+            /* Iosevka Medium as primary font */
+            color: #111;
+            /* Almost black text */
 }
 
 .note.selected {
     border: 2px solid #007bff;
-    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
 }
 
 .note pre {
@@ -50,6 +59,8 @@ html {
     font-size: inherit;
     resize: none;
     overflow: hidden;
+    color: inherit;
+        /* Inherit the almost black color */
 }
 
 .note-input:focus {

@@ -76,6 +76,7 @@ function handleNoteMouseUp(e) {
 
 
 function createNote(x, y) {
+    clearSelection();
     const note = document.createElement('div');
     note.className = 'note';
     
@@ -98,6 +99,7 @@ function createNote(x, y) {
     note.addEventListener('mousedown', handleNoteMouseDown);
 
     input.focus();
+    note.classList.add('editing');
     updateCanvasSize();
 }
 
@@ -118,9 +120,10 @@ function saveNote(note) {
     } else {
         note.remove();
     }
+
+    note.classList.remove('editing');
     updateCanvasSize();
 }
-
 
 function editNote(noteOrEvent) {
     let note;
@@ -168,6 +171,8 @@ function editNote(noteOrEvent) {
     } else {
         input.setSelectionRange(input.value.length, input.value.length);
     }
+
+    note.classList.add('editing'); // Add the 'editing' class to the note
 }
 
 // Up

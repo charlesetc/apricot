@@ -89,8 +89,16 @@ function handleCanvasMouseUp(e) {
 }
 
 function handleKeyDown(e) {
-    if (e.key === 'Backspace' && selectedNotes.size > 0) {
-        deleteSelectedNotes();
+    if (e.key === 'Backspace') {
+        // Check if the active element is an input or textarea
+        const activeElement = document.activeElement;
+        const isEditing = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA';
+
+        // Only delete selected notes if we're not editing
+        if (!isEditing && selectedNotes.size > 0) {
+            e.preventDefault(); // Prevent browser back navigation
+            deleteSelectedNotes();
+        }
     }
 }
 
