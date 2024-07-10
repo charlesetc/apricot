@@ -1,0 +1,99 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#canvas {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: auto;
+}
+
+.note {
+    position: absolute;
+    background-color: #ffff88;
+    border: 1px solid #e6e6e6;
+    padding: 5px;
+    min-width: 100px;
+    cursor: move;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.note.selected {
+    border: 2px solid #007bff;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+}
+
+.note pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.note-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: inherit;
+    resize: none;
+    overflow: hidden;
+}
+
+.note-input:focus {
+    outline: none;
+}
+
+.selection-box {
+    position: absolute;
+    border: 2px dashed #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+    pointer-events: none;
+}
+
+#project-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#project-list li {
+    margin-bottom: 10px;
+}
+
+#project-list a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+}
+
+#new-project-form {
+    margin-top: 20px;
+}
+
+#new-project-input {
+    padding: 5px;
+    width: 200px;
+}
+
+.back-button {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    text-decoration: none;
+    color: #333;
+    border-radius: 3px;
+}
