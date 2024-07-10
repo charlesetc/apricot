@@ -23,8 +23,55 @@ function createNoteElement(noteData) {
     
     note.setAttribute('data-id', noteData.id);
 
-    note.addEventListener('mousedown', startDragging);
+    // Change this line
+    note.addEventListener('mousedown', handleNoteMouseDown);
     canvas.appendChild(note);
+}
+
+// Add this new function
+function handleNoteMouseDown(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return; // Allow normal interaction with input fields
+    }
+
+    const note = e.target.closest('.note');
+    if (!note) return;
+
+    // Store the initial position
+    dragStartPos = { x: e.clientX, y: e.clientY };
+
+    // Add mousemove and mouseup listeners to the document
+    document.addEventListener('mousemove', handleNoteDrag);
+    document.addEventListener('mouseup', handleNoteMouseUp);
+
+    e.preventDefault(); // Prevent text selection
+}
+
+// Add this new function
+function handleNoteDrag(e) {
+    const dx = e.clientX - dragStartPos.x;
+    const dy = e.clientY - dragStartPos.y;
+
+    if (Math.sqrt(dx*dx + dy*dy) > DRAG_THRESHOLD) {
+        // We've exceeded the drag threshold, start dragging
+        document.removeEventListener('mousemove', handleNoteDrag);
+        document.removeEventListener('mouseup', handleNoteMouseUp);
+        startDragging(e);
+    }
+}
+
+// Add this new function
+function handleNoteMouseUp(e) {
+    document.removeEventListener('mousemove', handleNoteDrag);
+    document.removeEventListener('mouseup', handleNoteMouseUp);
+
+    const dx = e.clientX - dragStartPos.x;
+    const dy = e.clientY - dragStartPos.y;
+
+    if (Math.sqrt(dx*dx + dy*dy) <= DRAG_THRESHOLD) {
+        // This was a click, not a drag
+        editNote(e);
+    }
 }
 
 
@@ -48,7 +95,7 @@ function createNote(x, y) {
     note.appendChild(input);
     canvas.appendChild(note);
 
-    note.addEventListener('mousedown', startDragging);
+    note.addEventListener('mousedown', handleNoteMouseDown);
 
     input.focus();
     updateCanvasSize();
@@ -74,10 +121,29 @@ function saveNote(note) {
     updateCanvasSize();
 }
 
-function editNote(note) {
-    if (!note) return;
+
+function editNote(noteOrEvent) {
+    let note;
+    if (noteOrEvent instanceof Event) {
+        note = noteOrEvent.target.closest('.note');
+    } else if (noteOrEvent instanceof Element) {
+        note = noteOrEvent;
+    } else {
+        console.error('Invalid argument passed to editNote');
+        return;
+    }
+
+    if (!note) {
+        console.error('No note found to edit');
+        return;
+    }
+
     const pre = note.querySelector('pre');
-    if (!pre) return;
+    if (!pre) {
+        console.error('No pre element found in the note');
+        return;
+    }
+
     const text = pre.textContent;
 
     const input = document.createElement(text.includes('\n') ? 'textarea' : 'input');
@@ -103,3 +169,5 @@ function editNote(note) {
         input.setSelectionRange(input.value.length, input.value.length);
     }
 }
+
+// Up

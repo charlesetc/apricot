@@ -20,6 +20,9 @@ function handleCanvasMouseDown(e) {
         }
     } else if (e.target.closest('.note')) {
         const clickedNote = e.target.closest('.note');
+
+        console.log("woah", e.target)
+
         if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
             if (!selectedNotes.has(clickedNote)) {
                 if (!e.ctrlKey && !e.shiftKey) {
@@ -86,7 +89,7 @@ function handleCanvasMouseUp(e) {
 }
 
 function handleKeyDown(e) {
-    if (e.key === 'Delete' && selectedNotes.size > 0) {
+    if (e.key === 'Backspace' && selectedNotes.size > 0) {
         deleteSelectedNotes();
     }
 }
@@ -119,7 +122,12 @@ function handleInput(e) {
             textarea.value = e.target.value;
             textarea.style.height = 'auto';
             textarea.addEventListener('keydown', handleInput);
-            textarea.addEventListener('blur', () => saveNote(e.target.parentElement));
+            textarea.addEventListener('blur', function() {
+                const note = this.closest('.note');
+                if (note) {
+                    saveNote(note);
+                }
+            });
             
             e.target.parentElement.replaceChild(textarea, e.target);
             textarea.focus();
@@ -127,6 +135,8 @@ function handleInput(e) {
         }
     }
 }
+
+
 // Make all functions global
 window.handleCanvasMouseDown = handleCanvasMouseDown;
 window.handleCanvasMouseMove = handleCanvasMouseMove;

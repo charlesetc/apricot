@@ -3,6 +3,12 @@ var canvas, isDragging, isSelecting, currentNote, offsetX, offsetY, canvasId;
 var selectedNotes, dragStartTime, selectionBox, selectionStart, mouseDownPos;
 var CLICK_THRESHOLD = 5; // pixels
 let isMultiSelect = false;
+
+let dragStartPos = { x: 0, y: 0 };
+const DRAG_THRESHOLD = 5; // pixels
+
+
+
 function initializeApp() {
     canvas = document.getElementById('canvas');
     isDragging = false;
