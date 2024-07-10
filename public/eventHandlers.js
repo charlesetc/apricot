@@ -99,6 +99,8 @@ function handleKeyDown(e) {
             e.preventDefault(); // Prevent browser back navigation
             deleteSelectedNotes();
         }
+    } else if (e.key === "Escape") {
+        clearSelection();
     }
 }
 
