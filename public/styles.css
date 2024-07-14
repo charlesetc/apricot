@@ -1,170 +1,198 @@
-body,
-html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-size: 14px;
-        font-family: 'Iosevka Medium', 'Courier New', Courier, monospace;
-body.canvas-page {
-    min-width: 500vw;
-        min-height: 500vh;
+/* Light mode styles */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #111;
+  --note-bg-color: #f0f0f0;
+  --note-border-color: #d0d0d0;
+  --button-bg-color: #f0f0f0;
+  --modal-bg-color: #fefefe;
+  --modal-border-color: #888;
+  --delete-button-bg-color: #ff4d4d;
+  --delete-button-color: white;
+  --selection-box-border-color: #007bff;
+  --selection-box-bg-color: rgba(0, 123, 255, 0.1);
 }
 
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1a1a1a;
+    --text-color: #f0f0f0;
+    --note-bg-color: #2a2a2a;
+    --note-border-color: #3a3a3a;
+    --button-bg-color: #2a2a2a;
+    --modal-bg-color: #2a2a2a;
+    --modal-border-color: #3a3a3a;
+    --delete-button-bg-color: #cc3939;
+    --delete-button-color: #f0f0f0;
+    --selection-box-border-color: #0056b3;
+    --selection-box-bg-color: rgba(0, 86, 179, 0.2);
+  }
+}
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-size: 14px;
+  font-family: 'Iosevka Medium', 'Courier New', Courier, monospace;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+body.canvas-page {
+  min-width: 500vw;
+  min-height: 500vh;
+}
+
+[class*="container"] {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 #canvas {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    overflow: auto;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: auto;
 }
 
 .note {
-    -webkit-user-select: none;
-        /* Safari */
-        -ms-user-select: none;
-        /* IE 10 and IE 11 */
-        user-select: none;
-        /* Standard syntax */
-    position: absolute;
-    background-color: #f0f0f0;
-        /* Light grey background */
-        border: 1px solid #d0d0d0;
-        /* Slightly darker border */
-        border-radius: 4px;
-        /* Smaller rounded corners */
-        padding: 3px 5px;
-        /* Reduced padding */
-        min-width: 120px;
-        cursor: move;
-        box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
-            font-family: 'Iosevka Medium', 'Courier New', Courier, monospace;
-            /* Iosevka Medium as primary font */
-            color: #111;
-            /* Almost black text */
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  position: absolute;
+  background-color: var(--note-bg-color);
+  border: 1px solid var(--note-border-color);
+  border-radius: 4px;
+  padding: 3px 5px;
+  min-width: 120px;
+  cursor: move;
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+  font-family: 'Iosevka Medium', 'Courier New', Courier, monospace;
+  color: var(--text-color);
 }
 
 .note.selected {
-    border: 2px solid #007bff;
+  border: 2px solid var(--selection-box-border-color);
 }
 
 .note pre {
-    margin: 0;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    font-family: inherit;
-    font-size: inherit;
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .note-input {
-    width: 100%;
-    border: none;
-    background: transparent;
-    font-family: inherit;
-    font-size: inherit;
-    resize: none;
-    overflow: hidden;
-    color: inherit;
-        /* Inherit the almost black color */
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  resize: none;
+  overflow: hidden;
+  color: inherit;
 }
 
 .note-input:focus {
-    outline: none;
+  outline: none;
 }
 
 .selection-box {
-    position: absolute;
-    border: 2px dashed #007bff;
-    background-color: rgba(0, 123, 255, 0.1);
-    pointer-events: none;
+  position: absolute;
+  border: 2px dashed var(--selection-box-border-color);
+  background-color: var(--selection-box-bg-color);
+  pointer-events: none;
 }
 
 #project-list {
-    list-style-type: none;
-    padding: 0;
+  list-style-type: none;
+  padding: 0;
 }
 
 #project-list li {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 #project-list a {
-    text-decoration: none;
-    color: #333;
-    font-weight: bold;
+  text-decoration: none;
+  color: var(--text-color);
+  font-weight: bold;
 }
 
 #new-project-form {
-    margin-top: 20px;
+  margin-top: 20px;
 }
 
 #new-project-input {
-    padding: 5px;
-    width: 200px;
+  padding: 5px;
+  width: 200px;
+  background-color: var(--note-bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--note-border-color);
 }
 
 .back-button {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    padding: 5px 10px;
-    background-color: #f0f0f0;
-    text-decoration: none;
-    color: #333;
-    border-radius: 3px;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  padding: 5px 10px;
+  background-color: var(--button-bg-color);
+  text-decoration: none;
+  color: var(--text-color);
+  border-radius: 3px;
 }
+
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 .modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-}
-
-#project-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+  background-color: var(--modal-bg-color);
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid var(--modal-border-color);
+  width: 80%;
+  max-width: 500px;
 }
 
 .settings-button {
-    background-color: #f0f0f0;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
+  background-color: var(--button-bg-color);
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  color: var(--text-color);
 }
 
 #delete-project {
-    background-color: #ff4d4d;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    margin-top: 10px;
-    cursor: pointer;
+  background-color: var(--delete-button-bg-color);
+  color: var(--delete-button-color);
+  border: none;
+  padding: 5px 10px;
+  margin-top: 10px;
+  cursor: pointer;
 }
 
 #close-modal {
-    background-color: #f0f0f0;
-    border: none;
-    padding: 5px 10px;
-    margin-top: 10px;
-    cursor: pointer;
+  background-color: var(--button-bg-color);
+  border: none;
+  padding: 5px 10px;
+  margin-top: 10px;
+  cursor: pointer;
+  color: var(--text-color);
 }
