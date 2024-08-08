@@ -118,8 +118,9 @@ function handleInput(e) {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
         // Calculate the position for the new note
-        let newNoteX = parseInt(note.style.left) + snapGridSize - scrollLeft;
-        let newNoteY = parseInt(note.style.top) + note.offsetHeight + snapGridSize - scrollTop;
+        // +1 to fix snapping when scrolled
+        let newNoteX = parseInt(note.style.left) + 1 - scrollLeft;
+        let newNoteY = parseInt(note.style.top) + note.offsetHeight + snapGridSize + 1 - scrollTop;
 
         newNoteX = evenNumber(newNoteX, snapGridSize);
         newNoteY = evenNumber(newNoteY, snapGridSize);
