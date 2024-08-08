@@ -21,8 +21,6 @@ function handleCanvasMouseDown(e) {
     } else if (e.target.closest('.note')) {
         const clickedNote = e.target.closest('.note');
 
-        console.log("woah", e.target)
-
         if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
             if (!selectedNotes.has(clickedNote)) {
                 if (!e.ctrlKey && !e.shiftKey) {
@@ -79,10 +77,13 @@ function handleCanvasMouseUp(e) {
     } else if (e.target.closest('.note')) {
         editNote(e);
     } else if (e.target === canvas) {
-        const dx = (e.clientX + scrollLeft) - mouseDownPos.x;
-        const dy = (e.clientY + scrollTop) - mouseDownPos.y;
+        let dx = (e.clientX + scrollLeft) - mouseDownPos.x;
+        let dy = (e.clientY + scrollTop) - mouseDownPos.y;
+
         if (Math.sqrt(dx*dx + dy*dy) <= CLICK_THRESHOLD) {
-            createNote(e.clientX, e.clientY);
+            let newNoteX = evenNumber(e.clientX, snapGridSize);
+            let newNoteY = evenNumber(e.clientY, snapGridSize);
+            createNote(newNoteX, newNoteY);
         }
     }
     clearSelectionBox();
@@ -117,8 +118,11 @@ function handleInput(e) {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
         // Calculate the position for the new note
-        const newNoteX = parseInt(note.style.left) - scrollLeft;
-        const newNoteY = parseInt(note.style.top) + note.offsetHeight + 10 - scrollTop;
+        let newNoteX = parseInt(note.style.left) - scrollLeft;
+        let newNoteY = parseInt(note.style.top) + note.offsetHeight + snapGridSize - scrollTop;
+
+        newNoteX = evenNumber(newNoteX, snapGridSize);
+        newNoteY = evenNumber(newNoteY, snapGridSize);
 
         // Create the new note at the calculated position
         createNote(newNoteX, newNoteY);
@@ -127,23 +131,58 @@ function handleInput(e) {
         const note = e.target.closest('.note');
         saveNote(note);
     } else if (e.key === 'Tab') {
-        e.preventDefault();
         if (e.target.tagName === 'INPUT') {
-            const textarea = document.createElement('textarea');
-            textarea.className = 'note-input';
-            textarea.value = e.target.value;
-            textarea.style.height = 'auto';
-            textarea.addEventListener('keydown', handleInput);
-            textarea.addEventListener('blur', function() {
-                const note = this.closest('.note');
-                if (note) {
-                    saveNote(note);
-                }
-            });
-            
-            e.target.parentElement.replaceChild(textarea, e.target);
-            textarea.focus();
-            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+            e.preventDefault();
+            const note = e.target.closest('.note');
+            const offset = e.shiftKey ? -1 * snapGridSize : snapGridSize;
+            note.style.left = `${parseInt(note.style.left) + offset}px`
+            if (note.getAttribute('data-id')) {
+                saveNote(note);
+                editNote(note);
+            }
+        }
+    } else if (e.key === 'ArrowUp' && e.ctrlKey) {
+        e.preventDefault();
+        const note = e.target.closest('.note');
+        const offset = e.shiftKey ? -5 * snapGridSize : -1 * snapGridSize;
+        note.style.top = `${parseInt(note.style.top) + offset}px`
+        if (note.getAttribute('data-id')) {
+            saveNote(note);
+            editNote(note);
+        }
+    } else if (e.key === 'ArrowDown' && e.ctrlKey) {
+        e.preventDefault();
+        const note = e.target.closest('.note');
+        const offset = e.shiftKey ? 5 * snapGridSize : snapGridSize;
+        note.style.top = `${parseInt(note.style.top) + offset}px`
+        if (note.getAttribute('data-id')) {
+            saveNote(note);
+            editNote(note);
+        }
+    } else if (e.key === 'ArrowLeft' && e.ctrlKey) {
+        e.preventDefault();
+        const note = e.target.closest('.note');
+        const offset = e.shiftKey ? -5 * snapGridSize : -1 * snapGridSize;
+        note.style.left = `${parseInt(note.style.left) + offset}px`
+        if (note.getAttribute('data-id')) {
+            saveNote(note);
+            editNote(note);
+        }
+    } else if (e.key === 'ArrowRight' && e.ctrlKey) {
+        e.preventDefault();
+        const note = e.target.closest('.note');
+        const offset = e.shiftKey ? 5 * snapGridSize : snapGridSize;
+        note.style.left = `${parseInt(note.style.left) + offset}px`
+        if (note.getAttribute('data-id')) {
+            saveNote(note);
+            editNote(note);
+        }
+    } else if (e.key === 'Backspace' && e.ctrlKey) {
+        e.preventDefault();
+        const note = e.target.closest('.note');
+        if (note.getAttribute('data-id')) {
+            deleteNoteFromBackend(note.getAttribute('data-id'));
+            note.remove();
         }
     }
 }

@@ -20,6 +20,7 @@ function startDragging(e) {
     e.stopPropagation();
 }
 
+
 function dragSelectedNotes(e) {
     if (!isDragging) return;
     
@@ -41,9 +42,22 @@ function dragSelectedNotes(e) {
     updateCanvasSize();
 }
 
+
+const snapGridSize = 20;
+
+function evenNumber(a, b) {
+    return a - (a % b);
+}
+
 function stopDragging() {
     if (!isDragging) return;
     isDragging = false;
+
+    selectedNotes.forEach(note => {
+        note.style.left = `${evenNumber(note.offsetLeft + 10, snapGridSize)}px`
+        note.style.top = `${evenNumber(note.offsetTop + 10, snapGridSize)}px`
+    })
+
     selectedNotes.forEach(sendToBackend);
 }
 
@@ -70,8 +84,8 @@ function updateCanvasSize() {
         maxBottom = Math.max(maxBottom, bottom);
     });
 
-    canvas.style.width = `${Math.max(maxRight + 100, window.innerWidth)}px`;
-    canvas.style.height = `${Math.max(maxBottom + 100, window.innerHeight)}px`;
+    canvas.style.width = `${Math.max(maxRight + 40000, window.innerWidth)}px`;
+    canvas.style.height = `${Math.max(maxBottom + 40000, window.innerHeight)}px`;
 }
 
 window.startDragging = startDragging;
