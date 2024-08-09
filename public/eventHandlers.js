@@ -90,21 +90,41 @@ function handleCanvasMouseUp(e) {
 }
 
 function selectFirstNote() {
-    const firstNote = document.querySelector('.note');
-    if (firstNote) {
-        clearSelection();
-        selectNote(firstNote);
-    }
-}
+    const notes = Array.from(document.querySelectorAll('.note'));
+    if (notes.length === 0) return; // No notes to select
 
+    let topLeftNote = notes[0];
+    let minDistance = Infinity;
+
+    notes.forEach(note => {
+        const rect = note.getBoundingClientRect();
+        const distance = Math.sqrt(rect.left * rect.left + rect.top * rect.top);
+        
+        if (distance < minDistance) {
+            minDistance = distance;
+            topLeftNote = note;
+        }
+    });
+
+    clearSelection();
+    selectNote(topLeftNote);
+}
 
 function handleKeyDown(e) {
     if (e.key === 'Tab' && !currentlyEditing) {
         e.preventDefault();
         selectFirstNote();
-    } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && !currentlyEditing && selectedNotes.size === 1) {
+    } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && 
+               !currentlyEditing && 
+               selectedNotes.size === 1 && 
+               !e.ctrlKey && 
+               !e.metaKey) {
         e.preventDefault();
         moveSelection(e.key);
+    } else if (e.key === 'Enter' && !currentlyEditing && selectedNotes.size === 1) {
+        e.preventDefault();
+        const selectedNote = Array.from(selectedNotes)[0];
+        editNote(selectedNote);
     } else if (e.key === 'Backspace') {
         const activeElement = document.activeElement;
         const isEditing = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA';
@@ -114,7 +134,15 @@ function handleKeyDown(e) {
             deleteSelectedNotes();
         }
     } else if (e.key === "Escape") {
-        clearSelection();
+        if (currentlyEditing) {
+            const note = currentlyEditing;
+            saveNote(note);
+            clearSelection();
+            selectNote(note);
+            currentlyEditing = null;
+        } else if (selectedNotes.size > 0) {
+            clearSelection();
+        }
     } else if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
     }
@@ -190,10 +218,6 @@ function handleInput(e) {
 
         // Create the new note at the calculated position
         createNote(newNoteX, newNoteY);
-    } else if (e.key === 'Escape') {
-        e.preventDefault();
-        const note = e.target.closest('.note');
-        saveNote(note);
     } else if (e.key === 'Tab') {
         if (e.target.tagName === 'INPUT') {
             e.preventDefault();

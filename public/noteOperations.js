@@ -80,6 +80,8 @@ function resizeInput(e) {
     e.target.style.width = `${e.target.value.length}ch`;
 }
 
+var currentlyEditing = null;
+
 
 function createNote(x, y) {
     clearSelection();
@@ -108,9 +110,10 @@ function createNote(x, y) {
     input.focus();
     note.classList.add('editing');
     updateCanvasSize();
+
+    currentlyEditing = note;
 }
 
-var currentlyEditing = null;
 window.createNote = createNote;
 
 function saveNote(note) {
@@ -175,6 +178,7 @@ function editNote(noteOrEvent) {
         input.style.height = input.scrollHeight + 'px';
     } else {
         input.type = 'text';
+        input.style.width = `${text.length}ch`;
     }
     
     input.addEventListener('keydown', handleInput);
