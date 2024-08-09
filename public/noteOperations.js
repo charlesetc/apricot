@@ -74,6 +74,10 @@ function handleNoteMouseUp(e) {
     }
 }
 
+function resizeInput(e) {
+    e.target.style.width = `${e.target.value.length}ch`;
+}
+
 
 function createNote(x, y) {
     clearSelection();
@@ -91,6 +95,7 @@ function createNote(x, y) {
     input.type = 'text';
     input.className = 'note-input';
     input.addEventListener('keydown', handleInput);
+    input.addEventListener('input', resizeInput);
     input.addEventListener('blur', () => saveNote(note));
 
     note.appendChild(input);
@@ -161,6 +166,7 @@ function editNote(noteOrEvent) {
     }
     
     input.addEventListener('keydown', handleInput);
+    input.addEventListener('input', resizeInput);
     input.addEventListener('blur', () => saveNote(note));
 
     note.innerHTML = '';

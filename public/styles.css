@@ -68,7 +68,7 @@ body.canvas-page {
   border: 1px solid var(--note-border-color);
   border-radius: 4px;
   padding: 3px 5px;
-  min-width: 120px;
+  min-width: 150px;
   cursor: move;
   box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
   font-family: 'Iosevka Medium', 'Courier New', Courier, monospace;
