@@ -89,23 +89,86 @@ function handleCanvasMouseUp(e) {
     clearSelectionBox();
 }
 
+function selectFirstNote() {
+    const firstNote = document.querySelector('.note');
+    if (firstNote) {
+        clearSelection();
+        selectNote(firstNote);
+    }
+}
+
+
 function handleKeyDown(e) {
-    if (e.key === 'Backspace') {
-        // Check if the active element is an input or textarea
+    if (e.key === 'Tab' && !currentlyEditing) {
+        e.preventDefault();
+        selectFirstNote();
+    } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && !currentlyEditing && selectedNotes.size === 1) {
+        e.preventDefault();
+        moveSelection(e.key);
+    } else if (e.key === 'Backspace') {
         const activeElement = document.activeElement;
         const isEditing = activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA';
 
-        // Only delete selected notes if we're not editing
         if (!isEditing && selectedNotes.size > 0) {
-            e.preventDefault(); // Prevent browser back navigation
+            e.preventDefault();
             deleteSelectedNotes();
         }
     } else if (e.key === "Escape") {
         clearSelection();
     } else if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault(); // Prevent browser save
+        e.preventDefault();
     }
 }
+
+function moveSelection(direction) {
+    const currentNote = Array.from(selectedNotes)[0];
+    const currentRect = currentNote.getBoundingClientRect();
+    const notes = Array.from(document.querySelectorAll('.note'));
+    
+    let closestNote = null;
+    let minDistance = Infinity;
+
+    notes.forEach(note => {
+        if (note === currentNote) return;
+        
+        const rect = note.getBoundingClientRect();
+        let distance;
+
+        switch (direction) {
+            case 'ArrowUp':
+                if (rect.bottom <= currentRect.top) {
+                    distance = Math.hypot(rect.left - currentRect.left, rect.bottom - currentRect.top);
+                }
+                break;
+            case 'ArrowDown':
+                if (rect.top >= currentRect.bottom) {
+                    distance = Math.hypot(rect.left - currentRect.left, rect.top - currentRect.bottom);
+                }
+                break;
+            case 'ArrowLeft':
+                if (rect.right <= currentRect.left) {
+                    distance = Math.hypot(rect.right - currentRect.left, rect.top - currentRect.top);
+                }
+                break;
+            case 'ArrowRight':
+                if (rect.left >= currentRect.right) {
+                    distance = Math.hypot(rect.left - currentRect.right, rect.top - currentRect.top);
+                }
+                break;
+        }
+
+        if (distance !== undefined && distance < minDistance) {
+            minDistance = distance;
+            closestNote = note;
+        }
+    });
+
+    if (closestNote) {
+        clearSelection();
+        selectNote(closestNote);
+    }
+}
+
 
 function handleInput(e) {
     if (e.key === 'Enter') {
@@ -195,3 +258,4 @@ window.handleCanvasMouseMove = handleCanvasMouseMove;
 window.handleCanvasMouseUp = handleCanvasMouseUp;
 window.handleKeyDown = handleKeyDown;
 window.handleInput = handleInput;
+window.moveSelection = moveSelection;

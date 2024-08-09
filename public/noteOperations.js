@@ -110,7 +110,7 @@ function createNote(x, y) {
     updateCanvasSize();
 }
 
-// Make function global
+var currentlyEditing = null;
 window.createNote = createNote;
 
 function saveNote(note) {
@@ -124,7 +124,6 @@ function saveNote(note) {
         note.appendChild(pre);
         note.setAttribute('data-id', note.getAttribute('data-id') || Date.now().toString());
         
-        // Add or remove 'header' class based on whether the text starts with '#'
         if (text.startsWith('#')) {
             note.classList.add('header');
         } else {
@@ -138,6 +137,9 @@ function saveNote(note) {
 
     note.classList.remove('editing');
     updateCanvasSize();
+    
+    // Reset the currentlyEditing variable
+    currentlyEditing = null;
 }
 
 function editNote(noteOrEvent) {
@@ -188,5 +190,8 @@ function editNote(noteOrEvent) {
         input.setSelectionRange(input.value.length, input.value.length);
     }
 
-    note.classList.add('editing'); // Add the 'editing' class to the note
+    note.classList.add('editing');
+    
+    // Set the currentlyEditing variable
+    currentlyEditing = note;
 }
