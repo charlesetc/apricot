@@ -23,6 +23,8 @@ function createNoteElement(noteData) {
     const pre = document.createElement('pre');
     pre.textContent = noteData.text;
     note.appendChild(pre);
+
+    maybeCreateImage(note, noteData.text, pre);
     
     note.setAttribute('data-id', noteData.id);
 
@@ -130,6 +132,8 @@ function saveNote(note) {
         note.innerHTML = '';
         note.appendChild(pre);
         note.setAttribute('data-id', note.getAttribute('data-id') || Date.now().toString());
+
+        maybeCreateImage(note, text, pre);
         
         if (text.startsWith('#')) {
             note.classList.add('header');
@@ -218,12 +222,29 @@ function createNoteWithImage(imageUrl, x, y) {
     pre.textContent = `![Pasted Image](${imageUrl})`;
     note.appendChild(pre);
 
+    maybeCreateImage(note, pre.textContent, pre);
+
     note.setAttribute('data-id', Date.now().toString());
     note.addEventListener('mousedown', handleNoteMouseDown);
     canvas.appendChild(note);
 
     sendToBackend(note);
     updateCanvasSize();
+}
+
+function maybeCreateImage(note, text, pre) {
+    if (isImageMarkdown(text)) {
+        const img = document.createElement('img');
+        const match = text.match(/!\[.*?\]\((.*?)\)/);
+        if (match && match[1]) {
+            img.src = match[1];
+            img.alt = 'Note Image';
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '100%';
+            note.appendChild(img);
+        }
+        pre.style.display = 'none';
+    }
 }
 
 window.createNoteWithImage = createNoteWithImage;

@@ -10,6 +10,10 @@ const DRAG_THRESHOLD = 5; // pixels
 let clientX = 0;
 let clientY = 0;
 
+function isImageMarkdown(text) {
+    const imageRegex = /!\[.*?\]\((.*?)\)/;
+    return imageRegex.test(text);
+}
 
 
 function initializeApp() {
