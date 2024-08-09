@@ -3,6 +3,11 @@ const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
+const multer = require('multer');
+const fs = require('fs');
+
+const upload = multer({ dest: 'uploads/' });
+
 const app = express();
 const port = 3000;
 
@@ -154,6 +159,24 @@ app.delete('/api/notes/:noteId', (req, res) => {
             return;
         }
         res.json({ message: 'Note deleted successfully', id: noteId });
+    });
+});
+
+app.post('/api/upload-image', upload.single('image'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).send('No image file uploaded.');
+    }
+
+    const tempPath = req.file.path;
+    const targetPath = path.join(__dirname, './public/uploads/' + req.file.originalname);
+
+    fs.rename(tempPath, targetPath, err => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error saving the image.');
+        }
+
+        res.json({ imageUrl: '/uploads/' + req.file.originalname });
     });
 });
 

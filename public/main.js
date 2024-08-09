@@ -7,6 +7,9 @@ let isMultiSelect = false;
 let dragStartPos = { x: 0, y: 0 };
 const DRAG_THRESHOLD = 5; // pixels
 
+let clientX = 0;
+let clientY = 0;
+
 
 
 function initializeApp() {
@@ -30,6 +33,12 @@ function initializeApp() {
     canvas.addEventListener('mouseup', handleCanvasMouseUp);
     window.addEventListener('resize', updateCanvasSize);
     document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('paste', handlePaste);
+
+    window.addEventListener("mousemove", function(event) {
+        clientX = event.clientX;
+        clientY = event.clientY;
+    });
 
     loadNotes();
 }

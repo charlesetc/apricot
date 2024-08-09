@@ -92,8 +92,12 @@ function createNote(x, y) {
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     
-    note.style.left = `${x + scrollLeft}px`;
-    note.style.top = `${y + scrollTop}px`;
+    // Adjust x and y for scroll offset and snap to grid
+    let adjustedX = evenNumber(x + scrollLeft + 1, snapGridSize);
+    let adjustedY = evenNumber(y + scrollTop + 1, snapGridSize);
+
+    note.style.left = `${adjustedX}px`;
+    note.style.top = `${adjustedY}px`;
 
     const input = document.createElement('input');
     input.type = 'text';
@@ -199,3 +203,27 @@ function editNote(noteOrEvent) {
     // Set the currentlyEditing variable
     currentlyEditing = note;
 }
+
+
+function createNoteWithImage(imageUrl, x, y) {
+    const note = document.createElement('div');
+    note.className = 'note';
+    
+    console.log("x,y", x, y);
+
+    note.style.left = `${x}px`;
+    note.style.top = `${y}px`;
+
+    const pre = document.createElement('pre');
+    pre.textContent = `![Pasted Image](${imageUrl})`;
+    note.appendChild(pre);
+
+    note.setAttribute('data-id', Date.now().toString());
+    note.addEventListener('mousedown', handleNoteMouseDown);
+    canvas.appendChild(note);
+
+    sendToBackend(note);
+    updateCanvasSize();
+}
+
+window.createNoteWithImage = createNoteWithImage;

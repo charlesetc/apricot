@@ -211,7 +211,7 @@ function handleInput(e) {
         // Calculate the position for the new note
         // +1 to fix snapping when scrolled
         let newNoteX = parseInt(note.style.left) + 1 - scrollLeft;
-        let newNoteY = parseInt(note.style.top) + note.offsetHeight + snapGridSize + 1 - scrollTop;
+        let newNoteY = parseInt(note.style.top) + note.offsetHeight + snapGridSize + 2 - scrollTop;
 
         newNoteX = evenNumber(newNoteX, snapGridSize);
         newNoteY = evenNumber(newNoteY, snapGridSize);
@@ -275,6 +275,47 @@ function handleInput(e) {
     }
 }
 
+async function handlePaste(e) {
+    const clipboardItems = await navigator.clipboard.read();
+    
+    for (const clipboardItem of clipboardItems) {
+        for (const type of clipboardItem.types) {
+            if (type.startsWith('image/')) {
+                // only prevent default if the clipboard item is an image
+                e.preventDefault();
+
+                const blob = await clipboardItem.getType(type);
+                const uuid = crypto.randomUUID();
+                const formData = new FormData();
+                formData.append('image', blob, `pasted_image_${uuid}.png`);
+
+                try {
+                    const response = await fetch('/api/upload-image', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    // Get the current scroll position
+                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    
+                    // Calculate the position for the new note
+                    const x = clientX + scrollLeft;
+                    const y = clientY + scrollTop;
+                    
+                    createNoteWithImage(data.imageUrl, x, y);
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                }
+                return;
+            }
+        }
+    }
+}
+
+
+
 
 // Make all functions global
 window.handleCanvasMouseDown = handleCanvasMouseDown;
@@ -283,3 +324,4 @@ window.handleCanvasMouseUp = handleCanvasMouseUp;
 window.handleKeyDown = handleKeyDown;
 window.handleInput = handleInput;
 window.moveSelection = moveSelection;
+window.handlePaste = handlePaste;
