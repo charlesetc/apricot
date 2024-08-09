@@ -87,6 +87,9 @@ body.canvas-page {
   font-size: inherit;
 }
 
+.note.header {
+  font-weight: bold;
+}
 .note-input {
   width: 100%;
   border: none;

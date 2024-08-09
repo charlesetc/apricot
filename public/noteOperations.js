@@ -14,6 +14,9 @@ function loadNotes() {
 function createNoteElement(noteData) {
     const note = document.createElement('div');
     note.className = 'note';
+    if (noteData.text.startsWith('#')) {
+        note.classList.add('header');
+    }
     note.style.left = `${noteData.x}px`;
     note.style.top = `${noteData.y}px`;
     
@@ -23,7 +26,6 @@ function createNoteElement(noteData) {
     
     note.setAttribute('data-id', noteData.id);
 
-    // Change this line
     note.addEventListener('mousedown', handleNoteMouseDown);
     canvas.appendChild(note);
 }
@@ -121,6 +123,14 @@ function saveNote(note) {
         note.innerHTML = '';
         note.appendChild(pre);
         note.setAttribute('data-id', note.getAttribute('data-id') || Date.now().toString());
+        
+        // Add or remove 'header' class based on whether the text starts with '#'
+        if (text.startsWith('#')) {
+            note.classList.add('header');
+        } else {
+            note.classList.remove('header');
+        }
+        
         sendToBackend(note);
     } else {
         note.remove();
