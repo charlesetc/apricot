@@ -1,4 +1,4 @@
-// eventHandlers.js
+
 
 function handleCanvasMouseDown(e) {
     // Account for scroll offset
@@ -110,6 +110,69 @@ function selectFirstNote() {
     selectNote(topLeftNote);
 }
 
+let searchOverlay = document.getElementById('search-overlay');
+let searchInput = document.getElementById('canvas-search');
+let searchResults = document.getElementById('search-results');
+
+function toggleSearchOverlay() {
+
+
+    fetch('/api/canvases')
+    .then(response => response.json())
+    .then(canvases => {
+        displaySearchResults(canvases);
+    }).then(() => {
+        searchOverlay.style.display = searchOverlay.style.display === 'block' ? 'none' : 'block';
+        if (searchOverlay.style.display === 'block') {
+            searchInput.focus();
+        }
+    });
+}
+
+function displaySearchResults(canvases) {
+    searchResults.innerHTML = '';
+    canvases.forEach((canvas, index) => {
+        const resultElement = document.createElement('div');
+        resultElement.classList.add('search-result');
+        resultElement.dataset.id = canvas.id;
+        resultElement.textContent = canvas.name;
+        resultElement.addEventListener('click', () => {
+            navigateToCanvas(canvas.id);
+        });
+        searchResults.appendChild(resultElement);
+    });
+}
+
+function navigateToCanvas(canvasId) {
+    window.location.href = `/canvas.html?id=${canvasId}`;
+}
+
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const firstResult = searchResults.querySelector('.search-result');
+        if (firstResult) {
+            const canvasId = firstResult.dataset.id;
+            navigateToCanvas(canvasId);
+        }
+    }
+});
+
+function searchCanvases() {
+    const query = searchInput.value.toLowerCase();
+    fetch('/api/canvases')
+        .then(response => response.json())
+        .then(canvases => {
+            const options = {
+                keys: ['name'],
+                threshold: 0.3,
+            };
+            const fuse = new Fuse(canvases, options);
+            const filteredCanvases = fuse.search(query).map(result => result.item);
+            displaySearchResults(filteredCanvases);
+        });
+}
+
 function handleKeyDown(e) {
     if (e.key === 'Tab' && !currentlyEditing) {
         e.preventDefault();
@@ -145,6 +208,9 @@ function handleKeyDown(e) {
         }
     } else if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
+    } else if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+        e.preventDefault();
+        toggleSearchOverlay();
     }
 }
 
@@ -315,6 +381,18 @@ async function handlePaste(e) {
 }
 
 
+searchInput.addEventListener('input', searchCanvases);
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && searchOverlay.style.display === 'block') {
+        toggleSearchOverlay();
+        fetch('/api/canvases')
+        .then(response => response.json())
+        .then(canvases => {
+            displaySearchResults(canvases);
+        });    
+    }
+});
 
 
 // Make all functions global
@@ -325,3 +403,4 @@ window.handleKeyDown = handleKeyDown;
 window.handleInput = handleInput;
 window.moveSelection = moveSelection;
 window.handlePaste = handlePaste;
+window.handleKeyDown = handleKeyDown;
