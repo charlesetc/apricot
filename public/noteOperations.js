@@ -89,17 +89,9 @@ function createNote(x, y) {
     clearSelection();
     const note = document.createElement('div');
     note.className = 'note';
-    
-    // Account for scroll offset
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
-    // Adjust x and y for scroll offset and snap to grid
-    let adjustedX = evenNumber(x + scrollLeft + 1, snapGridSize);
-    let adjustedY = evenNumber(y + scrollTop + 1, snapGridSize);
 
-    note.style.left = `${adjustedX}px`;
-    note.style.top = `${adjustedY}px`;
+    note.style.left = `${x}px`;
+    note.style.top = `${y}px`;
 
     const input = document.createElement('input');
     input.type = 'text';
@@ -123,8 +115,15 @@ function createNote(x, y) {
 window.createNote = createNote;
 
 function saveNote(note) {
-    const input = note.querySelector('.note-input');
-    const text = input.value.trim();
+    let text;
+
+    if (note.querySelector('.note-input')) {
+        const input = note.querySelector('.note-input');
+        text = input.value.trim();
+    } else {
+        const pre = note.querySelector('pre');
+        text = pre.textContent;
+    }
 
     if (text) {
         const pre = document.createElement('pre');

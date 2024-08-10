@@ -78,10 +78,8 @@ function updateCanvasSize() {
     let maxBottom = 0;
 
     notes.forEach(note => {
-        const right = note.offsetLeft + note.offsetWidth;
-        const bottom = note.offsetTop + note.offsetHeight;
-        maxRight = Math.max(maxRight, right);
-        maxBottom = Math.max(maxBottom, bottom);
+        maxRight = Math.max(maxRight, note.offsetLeft);
+        maxBottom = Math.max(maxBottom, note.offsetTop);
     });
 
     canvas.style.width = `${Math.max(maxRight + 40000, window.innerWidth)}px`;
