@@ -30,6 +30,7 @@ function createNoteElement(noteData) {
 
     note.addEventListener('mousedown', handleNoteMouseDown);
     canvas.appendChild(note);
+    return note;
 }
 
 // Add this new function

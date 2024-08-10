@@ -211,6 +211,12 @@ function handleKeyDown(e) {
     } else if ((e.metaKey || e.ctrlKey) && e.key === '/') {
         e.preventDefault();
         toggleSearchOverlay();
+    } else if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        undoOperation();
+    } else if (e.key === 'y' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        redoOperation();
     }
 }
 
