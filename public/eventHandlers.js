@@ -21,6 +21,11 @@ function handleCanvasMouseDown(e) {
     } else if (e.target.closest('.note')) {
         const clickedNote = e.target.closest('.note');
 
+        if (clickedNote.classList.contains('link') && !e.metaKey && !e.shiftKey) {
+            window.open(clickedNote.querySelector('a').href, '_blank');
+            return;
+        }
+
         if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
             if (!selectedNotes.has(clickedNote)) {
                 if (!e.ctrlKey && !e.shiftKey) {
@@ -306,13 +311,18 @@ function handleInput(e) {
         let newNoteX = evenNumber(parseInt(note.style.left), snapGridSize);
         let newNoteY = evenNumber(parseInt(note.style.top), snapGridSize) + snapGridSize * 2;
 
-        createNote(newNoteX, newNoteY);
+        if (note.classList.contains('list')) {
+            createNote(newNoteX, newNoteY, note.bulletStr + ' ');
+        } else {
+            createNote(newNoteX, newNoteY);
+        }
     } else if (e.key === 'Tab') {
         if (e.target.tagName === 'INPUT') {
             e.preventDefault();
             const note = e.target.closest('.note');
             const offset = e.shiftKey ? -1 * snapGridSize : snapGridSize;
             note.style.left = `${parseInt(note.style.left) + offset}px`
+            
             if (note.getAttribute('data-id')) {
                 saveNote(note);
                 editNote(note);
@@ -414,6 +424,14 @@ document.addEventListener('keydown', (e) => {
         .then(canvases => {
             displaySearchResults(canvases);
         });    
+    } else if (e.key === 'Meta' || e.key === 'Shift') {
+        document.body.classList.add('meta-or-shift-pressed');
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    if ((e.key === 'Meta' || e.key === 'Shift') && document.body.classList.contains('meta-or-shift-pressed')) {
+        document.body.classList.remove('meta-or-shift-pressed');
     }
 });
 

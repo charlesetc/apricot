@@ -11,6 +11,7 @@
   --delete-button-color: white;
   --selection-box-border-color: #007bff;
   --selection-box-bg-color: rgba(0, 123, 255, 0.1);
+  --highlight-color: #007bff;
 }
 
 /* Dark mode styles */
@@ -27,6 +28,7 @@
     --delete-button-color: #f0f0f0;
     --selection-box-border-color: #0056b3;
     --selection-box-bg-color: rgba(0, 86, 179, 0.2);
+    --highlight-color: #0058b7;
   }
 }
 
@@ -253,4 +255,17 @@ body.canvas-page {
 
 .search-result:first-child {
   background-color: var(--note-bg-color);
+}
+.note.link a {
+  color: var(--highlight-color);
+  text-decoration: underline;
+}
+
+.note.link {
+  cursor: pointer;
+}
+
+.meta-or-shift-pressed .note.link,
+.meta-or-shift-pressed .note.link a {
+  cursor: move;
 }

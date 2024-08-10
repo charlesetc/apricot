@@ -17,6 +17,7 @@ function createNoteElement(noteData) {
     if (noteData.text.startsWith('#')) {
         note.classList.add('header');
     }
+
     note.style.left = `${noteData.x}px`;
     note.style.top = `${noteData.y}px`;
     
@@ -25,6 +26,7 @@ function createNoteElement(noteData) {
     note.appendChild(pre);
 
     maybeCreateImage(note, noteData.text, pre);
+    maybeCreateLinkNote(note, noteData.text, pre);
     
     note.setAttribute('data-id', noteData.id);
 
@@ -85,7 +87,7 @@ function resizeInput(e) {
 var currentlyEditing = null;
 
 
-function createNote(x, y) {
+function createNote(x, y, text = null) {
     clearSelection();
     const note = document.createElement('div');
     note.className = 'note';
@@ -99,6 +101,10 @@ function createNote(x, y) {
     input.addEventListener('keydown', handleInput);
     input.addEventListener('input', resizeInput);
     input.addEventListener('blur', () => saveNote(note));
+
+    if (text) {
+        input.value = text;
+    }
 
     note.appendChild(input);
     canvas.appendChild(note);
@@ -133,12 +139,23 @@ function saveNote(note) {
         note.setAttribute('data-id', note.getAttribute('data-id') || Date.now().toString());
 
         maybeCreateImage(note, text, pre);
+        maybeCreateLinkNote(note, text, pre);
         
         if (text.startsWith('#')) {
             note.classList.add('header');
         } else {
             note.classList.remove('header');
         }
+
+        if (text.startsWith('• ') || text == '•'
+            || text.startsWith('* ') || text == '*'
+            || text.startsWith('- ') || text == '-') {
+            note.classList.add('list');
+            note.bulletStr = text.charAt(0);
+        } else {
+            note.classList.remove('list');
+        }
+
         
         sendToBackend(note);
     } else {
@@ -150,6 +167,8 @@ function saveNote(note) {
     
     // Reset the currentlyEditing variable
     currentlyEditing = null;
+
+    return note;
 }
 
 function editNote(noteOrEvent) {
@@ -222,6 +241,7 @@ function createNoteWithImage(imageUrl, x, y) {
     note.appendChild(pre);
 
     maybeCreateImage(note, pre.textContent, pre);
+    maybeCreateLinkNote(note, pre.textContent, pre);
 
     note.setAttribute('data-id', Date.now().toString());
     note.addEventListener('mousedown', handleNoteMouseDown);
@@ -243,6 +263,29 @@ function maybeCreateImage(note, text, pre) {
             note.appendChild(img);
         }
         pre.style.display = 'none';
+        note.classList.add('image');
+    } else {
+        note.classList.remove('image');
+    }
+}
+
+function isLinkMarkdown(text) {
+    return text.match(/\[(.*?)\]\((.*?)\)/);
+}
+
+function maybeCreateLinkNote(note, text, pre) {
+    if (isLinkMarkdown(text)) {
+        const link = document.createElement('a');
+        const match = text.match(/\[(.*?)\]\((.*?)\)/);
+        if (match && match[1] && match[2]) {
+            link.href = match[2];
+            link.textContent = match[1];
+            note.appendChild(link);
+        }
+        pre.style.display = 'none';
+        note.classList.add('link');
+    } else {
+        note.classList.remove('link');
     }
 }
 
