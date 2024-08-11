@@ -9,7 +9,7 @@ const fs = require('fs');
 const upload = multer({ dest: 'uploads/' });
 
 const app = express();
-const port = 3000;
+const port = 3003;
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
