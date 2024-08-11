@@ -274,7 +274,7 @@ function isLinkMarkdown(text) {
 }
 
 function maybeCreateLinkNote(note, text, pre) {
-    if (isLinkMarkdown(text)) {
+    if (isLinkMarkdown(text) && !note.classList.contains('image')) {
         const link = document.createElement('a');
         const match = text.match(/\[(.*?)\]\((.*?)\)/);
         if (match && match[1] && match[2]) {

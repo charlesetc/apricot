@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const mustache = require('mustache');
 
 const multer = require('multer');
 const fs = require('fs');
@@ -43,6 +44,31 @@ app.post('/api/canvases', (req, res) => {
             return;
         }
         res.json({ id: this.lastID, name });
+    });
+});
+
+app.get('/api/canvases/new-journal', (req, res) => {
+    const name = `Journal ${new Date().toISOString().split('T')[0]}`;
+    
+    db.get('SELECT id FROM canvases WHERE name = ?', [name], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        
+        if (row) {
+            // Journal for today already exists, redirect to it
+            res.redirect(`/canvas.html?id=${row.id}`);
+        } else {
+            // Journal doesn't exist, create a new one
+            db.run('INSERT INTO canvases (name) VALUES (?)', [name], function(err) {
+                if (err) {
+                    res.status(500).json({ error: err.message });
+                    return;
+                }
+                res.redirect(`/canvas.html?id=${this.lastID}`);
+            });
+        }
     });
 });
 
@@ -178,6 +204,12 @@ app.post('/api/upload-image', upload.single('image'), (req, res) => {
 
         res.json({ imageUrl: '/uploads/' + req.file.originalname });
     });
+});
+
+app.get('/canvas/:id', (req, res) => {
+    const template = fs.readFileSync(path.join(__dirname, 'public', 'canvas.html'), 'utf-8');
+    const renderedHtml = mustache.render(template, { id: req.params.id });
+    res.send(renderedHtml);
 });
 
 app.get('*', (req, res) => {

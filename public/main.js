@@ -25,11 +25,12 @@ function initializeApp() {
     selectionStart = { x: 0, y: 0 };
     mouseDownPos = { x: 0, y: 0 };
 
-    const urlParams = new URLSearchParams(window.location.search);
-    canvasId = urlParams.get('id');
+    canvasId = globals 
+    // canvasId = urlParams.get('id');
+
 
     if (!canvasId) {
-        window.location.href = '/index.html';
+        window.location.href = '/notfound.html';
     }
 
     canvas.addEventListener('mousedown', handleCanvasMouseDown);

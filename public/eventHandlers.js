@@ -248,6 +248,12 @@ function handleKeyDown(e) {
     } else if ((e.metaKey || e.ctrlKey) && e.key === '/') {
         e.preventDefault();
         toggleSearchOverlay();
+    } else if (e.key === 'n' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        window.location.href = '/';        
+    } else if (e.key === 'j' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        window.location.href = '/api/canvases/new-journal';
     }
 }
 

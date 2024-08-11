@@ -13,23 +13,24 @@
         <h1>Apricot</h1>
         <ul id="project-list"></ul>
         <form id="new-project-form">
-            <input type="text" id="new-project-input" placeholder="New project name" required>
+            <input autofocus type="text" id="new-project-input" placeholder="New project name" required>
             <button type="submit">Create New Project</button>
         </form>
     </div>
-<div id="settings-modal" class="modal">
-    <div class="modal-content">
-        <h2>Project Settings</h2>
-        <form id="edit-project-form">
-            <input type="text" id="edit-project-name" placeholder="Project name" required>
-            <button type="submit">Save Changes</button>
-        </form>
-        <button id="delete-project">Delete Project</button>
-        <button id="close-modal">Close</button>
-    </div>
-</div>
 
-    <script src="projects.js"></script>
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <h2>Project Settings</h2>
+            <form id="edit-project-form">
+                <input type="text" id="edit-project-name" placeholder="Project name" required>
+                <button type="submit">Save Changes</button>
+            </form>
+            <button id="delete-project">Delete Project</button>
+            <button id="close-modal">Close</button>
+        </div>
+    </div>
+
+    <script src="/projects.js"></script>
 </body>
 
 </html>
