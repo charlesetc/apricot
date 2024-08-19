@@ -270,7 +270,7 @@ function maybeCreateImage(note, text, pre) {
 }
 
 function isLinkMarkdown(text) {
-    return text.match(/\[(.*?)\]\((.*?)\)/);
+    return text.match(/\[(.*?)\]\((.*?)\)/) && !text.match(/!\[.*?\]\((.*?)\)/);
 }
 
 function maybeCreateLinkNote(note, text, pre) {
