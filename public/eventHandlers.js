@@ -302,7 +302,7 @@ function moveSelection(direction) {
 
 
 function handleInput(e) {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !(e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         const note = e.target.closest('.note');
         saveNote(note);
@@ -316,6 +316,15 @@ function handleInput(e) {
         } else {
             createNote(newNoteX, newNoteY);
         }
+    } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        const note = e.target.closest('.note');
+        saveNote(note);
+
+        let newNoteX = evenNumber(parseInt(note.style.left), snapGridSize) + snapGridSize * 9;
+        let newNoteY = evenNumber(parseInt(note.style.top), snapGridSize);
+
+        createNote(newNoteX, newNoteY);
     } else if (e.key === 'Tab') {
         if (e.target.tagName === 'INPUT') {
             e.preventDefault();
