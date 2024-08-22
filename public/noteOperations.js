@@ -258,8 +258,6 @@ function maybeCreateImage(note, text, pre) {
         if (match && match[1]) {
             img.src = match[1];
             img.alt = 'Note Image';
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '100%';
             note.appendChild(img);
         }
         pre.style.display = 'none';

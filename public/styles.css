@@ -92,6 +92,7 @@ body.canvas-page {
 .note.header {
   font-weight: bold;
 }
+
 .note-input {
   width: 100%;
   border: none;
@@ -103,6 +104,9 @@ body.canvas-page {
   color: inherit;
 }
 
+.note img {
+  max-width: 720px;
+}
 .note-input:focus {
   outline: none;
 }
