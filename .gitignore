@@ -1,3 +1,5 @@
 node_modules
 *.db
 public/uploads
+.DS_Store
+public/.DS_Store
