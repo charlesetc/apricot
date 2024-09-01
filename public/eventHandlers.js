@@ -2,6 +2,35 @@
 let isCanvasDragging = false;
 let lastMouseX, lastMouseY;
 
+function findNoteAtPosition(x, y) {
+    let element = document.elementFromPoint(x, y);
+    
+    while (element && element !== document.body) {
+        if (element.classList.contains('note')) {
+            return element;
+        }
+        element = element.parentElement;
+    }
+    return null;
+}
+
+
+function findListNoteAbove(x, y) {
+    console.log("x,y", x, y);
+    const notes = Array.from(document.querySelectorAll('.note'));
+
+    const note = findNoteAtPosition(x, y - snapGridSize) || findNoteAtPosition(x, y - snapGridSize * 2);
+    if (note && note.classList.contains('list')) {
+        var rect = note.getBoundingClientRect();
+        if (Math.abs(rect.left - x) <= 200) {
+            return note;
+        } 
+    }
+
+    
+
+    return null;
+}
 
 function stopCanvasDragging() {
     document.body.classList.remove('right-click-dragging');
@@ -125,9 +154,19 @@ function handleCanvasMouseUp(e) {
         let dy = (e.clientY + scrollTop) - mouseDownPos.y;
 
         if (Math.sqrt(dx*dx + dy*dy) <= CLICK_THRESHOLD) {
-            let newNoteX = evenNumber(e.clientX + scrollLeft, snapGridSize);
-            let newNoteY = evenNumber(e.clientY + scrollTop, snapGridSize);
-            createNote(newNoteX, newNoteY);
+            const listNoteAbove = findListNoteAbove(e.clientX, e.clientY);
+            if (listNoteAbove) {
+                const listNoteRect = listNoteAbove.getBoundingClientRect();
+                let newNoteX = listNoteRect.left + scrollLeft;
+                let newNoteY = listNoteRect.top + scrollTop + snapGridSize * 2;
+                
+                const bulletStr = listNoteAbove.textContent.trim()[0]; // Get the bullet character
+                createNote(newNoteX, newNoteY, `${bulletStr} `);
+            } else {
+                let newNoteX = evenNumber(e.clientX + scrollLeft, snapGridSize);
+                let newNoteY = evenNumber(e.clientY + scrollTop, snapGridSize);
+                createNote(newNoteX, newNoteY);
+            }
         }
     }
     clearSelectionBox();

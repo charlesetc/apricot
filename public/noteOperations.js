@@ -11,28 +11,49 @@ function loadNotes() {
         .catch(error => console.error('Error loading notes:', error));
 }
 
+
+
 function createNoteElement(noteData) {
     const note = document.createElement('div');
     note.className = 'note';
-    if (noteData.text.startsWith('#')) {
-        note.classList.add('header');
-    }
 
     note.style.left = `${noteData.x}px`;
     note.style.top = `${noteData.y}px`;
     
-    const pre = document.createElement('pre');
-    pre.textContent = noteData.text;
-    note.appendChild(pre);
-
-    maybeCreateImage(note, noteData.text, pre);
-    maybeCreateLinkNote(note, noteData.text, pre);
-    
     note.setAttribute('data-id', noteData.id);
+
+    initializeNoteContents(note, noteData.text);
 
     note.addEventListener('mousedown', handleNoteMouseDown);
     canvas.appendChild(note);
 }
+
+function initializeNoteContents(note, text) {
+    const pre = document.createElement('pre');
+    pre.textContent = text;
+    note.innerHTML = '';
+    note.appendChild(pre);
+    note.setAttribute('data-id', note.getAttribute('data-id') || Date.now().toString());
+
+    maybeCreateImage(note, text, pre);
+    maybeCreateLinkNote(note, text, pre);
+
+    if (text.startsWith('#')) {
+        note.classList.add('header');
+    } else {
+        note.classList.remove('header');
+    }
+
+    if (text.startsWith('• ') || text == '•'
+        || text.startsWith('* ') || text == '*'
+        || text.startsWith('- ') || text == '-') {
+        note.classList.add('list');
+        note.bulletStr = text.charAt(0);
+    } else {
+        note.classList.remove('list');
+    }
+}
+
 
 // Add this new function
 function handleNoteMouseDown(e) {
@@ -124,6 +145,7 @@ function createNote(x, y, text = null) {
 
 window.createNote = createNote;
 
+
 function saveNote(note) {
     let text;
 
@@ -136,31 +158,7 @@ function saveNote(note) {
     }
 
     if (text) {
-        const pre = document.createElement('pre');
-        pre.textContent = text;
-        note.innerHTML = '';
-        note.appendChild(pre);
-        note.setAttribute('data-id', note.getAttribute('data-id') || Date.now().toString());
-
-        maybeCreateImage(note, text, pre);
-        maybeCreateLinkNote(note, text, pre);
-        
-        if (text.startsWith('#')) {
-            note.classList.add('header');
-        } else {
-            note.classList.remove('header');
-        }
-
-        if (text.startsWith('• ') || text == '•'
-            || text.startsWith('* ') || text == '*'
-            || text.startsWith('- ') || text == '-') {
-            note.classList.add('list');
-            note.bulletStr = text.charAt(0);
-        } else {
-            note.classList.remove('list');
-        }
-
-        
+        initializeNoteContents(note, text);
         sendToBackend(note);
     } else {
         note.remove();
