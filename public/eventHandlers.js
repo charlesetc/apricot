@@ -397,12 +397,15 @@ function handleInput(e) {
     } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         const note = e.target.closest('.note');
-        saveNote(note);
 
-        let newNoteX = evenNumber(parseInt(note.style.left), snapGridSize) + snapGridSize * 9;
-        let newNoteY = evenNumber(parseInt(note.style.top), snapGridSize);
+        const rect = note.getBoundingClientRect();
+        let newNoteX = evenNumber(rect.right + window.scrollX + snapGridSize , snapGridSize);
+        let newNoteY = evenNumber(rect.top + window.scrollY, snapGridSize);
 
         createNote(newNoteX, newNoteY);
+
+        // Important to do this after creating the new note, so the note will still exist when we need it.
+        saveNote(note);
     } else if (e.key === 'Tab') {
         if (e.target.tagName === 'INPUT') {
             e.preventDefault();
