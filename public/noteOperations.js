@@ -36,10 +36,10 @@ function createNoteElement(noteData) {
 
 // Add this new function
 function handleNoteMouseDown(e) {
-    if (e.button === 2) { // Right mouse button
+    if (e.button === 1) {
         return;
     }
-    
+
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         return; // Allow normal interaction with input fields
     }

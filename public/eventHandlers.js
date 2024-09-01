@@ -1,16 +1,16 @@
 
-let isRightClickDragging = false;
+let isCanvasDragging = false;
 let lastMouseX, lastMouseY;
 
 
-function stopRightClickDragging() {
+function stopCanvasDragging() {
     document.body.classList.remove('right-click-dragging');
-    isRightClickDragging = false;
+    isCanvasDragging = false;
 }
 
-function startRightClickDragging(e) {
+function startCanvasDragging(e) {
     document.body.classList.add('right-click-dragging');
-    isRightClickDragging = true;
+    isCanvasDragging = true;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
 }
@@ -22,9 +22,9 @@ function handleCanvasMouseDown(e) {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
 
-    if (e.button === 2) { // Right mouse button
+    if (e.button === 1) {
         e.preventDefault(); // Prevent context menu
-        startRightClickDragging(e);
+        startCanvasDragging(e);
         return;
     }
     
@@ -67,7 +67,7 @@ function handleCanvasMouseDown(e) {
 SCROLL_MULTIPLIER = 1.5;
 
 function handleCanvasMouseMove(e) {
-    if (isRightClickDragging) {
+    if (isCanvasDragging) {
         const dx = e.clientX - lastMouseX;
         const dy = e.clientY - lastMouseY;
         window.scrollBy(-dx * SCROLL_MULTIPLIER, -dy * SCROLL_MULTIPLIER);
@@ -99,8 +99,8 @@ function handleCanvasMouseMove(e) {
 }
 
 function handleCanvasMouseUp(e) {
-    if (e.button === 2) { // Right mouse button
-        stopRightClickDragging();
+    if (e.button === 1) {
+        stopCanvasDragging();
         return;
     }
 
@@ -483,9 +483,16 @@ document.addEventListener('keyup', (e) => {
     }
 });
 
+function stopBoxSelection() {
+    if (isSelecting) {
+        isSelecting = false;
+        finalizeSelection();
+    }
+}
 
 // Add global mouseup event listener
-document.addEventListener('mouseup', stopRightClickDragging);
+document.addEventListener('mouseup', stopCanvasDragging);
+document.addEventListener('mouseup', stopBoxSelection);
 
 
 // Make all functions global
@@ -497,4 +504,4 @@ window.handleInput = handleInput;
 window.moveSelection = moveSelection;
 window.handlePaste = handlePaste;
 window.handleKeyDown = handleKeyDown;
-window.isRightClickDragging = isRightClickDragging;
+window.isCanvasDragging = isCanvasDragging;
