@@ -1,9 +1,32 @@
 
+let isRightClickDragging = false;
+let lastMouseX, lastMouseY;
+
+
+function stopRightClickDragging() {
+    document.body.classList.remove('right-click-dragging');
+    isRightClickDragging = false;
+}
+
+function startRightClickDragging(e) {
+    document.body.classList.add('right-click-dragging');
+    isRightClickDragging = true;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+}
+
 
 function handleCanvasMouseDown(e) {
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+
+    if (e.button === 2) { // Right mouse button
+        e.preventDefault(); // Prevent context menu
+        startRightClickDragging(e);
+        return;
+    }
     
     if (e.target === canvas) {
         mouseDownPos = { 
@@ -41,7 +64,18 @@ function handleCanvasMouseDown(e) {
     }
 }
 
+SCROLL_MULTIPLIER = 1.5;
+
 function handleCanvasMouseMove(e) {
+    if (isRightClickDragging) {
+        const dx = e.clientX - lastMouseX;
+        const dy = e.clientY - lastMouseY;
+        window.scrollBy(-dx * SCROLL_MULTIPLIER, -dy * SCROLL_MULTIPLIER);
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+        return;
+    }
+
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -65,6 +99,11 @@ function handleCanvasMouseMove(e) {
 }
 
 function handleCanvasMouseUp(e) {
+    if (e.button === 2) { // Right mouse button
+        stopRightClickDragging();
+        return;
+    }
+
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -445,6 +484,10 @@ document.addEventListener('keyup', (e) => {
 });
 
 
+// Add global mouseup event listener
+document.addEventListener('mouseup', stopRightClickDragging);
+
+
 // Make all functions global
 window.handleCanvasMouseDown = handleCanvasMouseDown;
 window.handleCanvasMouseMove = handleCanvasMouseMove;
@@ -454,3 +497,4 @@ window.handleInput = handleInput;
 window.moveSelection = moveSelection;
 window.handlePaste = handlePaste;
 window.handleKeyDown = handleKeyDown;
+window.isRightClickDragging = isRightClickDragging;

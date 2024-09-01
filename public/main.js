@@ -35,9 +35,12 @@ function initializeApp() {
     canvas.addEventListener('mousedown', handleCanvasMouseDown);
     canvas.addEventListener('mousemove', handleCanvasMouseMove);
     canvas.addEventListener('mouseup', handleCanvasMouseUp);
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     window.addEventListener('resize', updateCanvasSize);
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('paste', handlePaste);
+
+
 
     window.addEventListener("mousemove", function(event) {
         clientX = event.clientX;

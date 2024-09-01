@@ -273,3 +273,6 @@ body.canvas-page {
 .meta-or-shift-pressed .note.link a {
   cursor: move;
 }
+body.right-click-dragging {
+  cursor: grabbing;
+}
