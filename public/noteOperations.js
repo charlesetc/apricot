@@ -145,6 +145,10 @@ function createNote(x, y, text = null) {
 
 window.createNote = createNote;
 
+function isMeaninglessContent(text) {
+    text = text.trim()
+    return text.length == 0 || (text.length == 1 && [ '*', '-', '•', ].includes(text));
+}
 
 function saveNote(note) {
     let text;
@@ -157,11 +161,11 @@ function saveNote(note) {
         text = pre.textContent;
     }
 
-    if (text) {
+    if (isMeaninglessContent(text)) {
+        note.remove();
+    } else {
         initializeNoteContents(note, text);
         sendToBackend(note);
-    } else {
-        note.remove();
     }
 
     note.classList.remove('editing');
