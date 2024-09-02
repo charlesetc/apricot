@@ -293,4 +293,89 @@ function maybeCreateLinkNote(note, text, pre) {
     }
 }
 
+function maybeCopySelectedNotes(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'c' && selectedNotes.size > 0) {
+        e.preventDefault();
+        const notesHtml = Array.from(selectedNotes)
+            .map(note => note.outerHTML.replace(/\sdata-id="[^"]*"/, ''))
+            .join('');
+        const blob = new Blob([notesHtml], {type: 'text/html'});
+        const item = new ClipboardItem({'text/html': blob});
+        navigator.clipboard.write([item]);
+    }
+}
+
+function maybeCutSelectedNotes(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'x' && !currentlyEditing) {
+        e.preventDefault();
+        const notesHtml = Array.from(selectedNotes)
+            .map(note => note.outerHTML.replace(/\sdata-id="[^"]*"/, ''))
+            .join('');
+        const blob = new Blob([notesHtml], {type: 'text/html'});
+        const item = new ClipboardItem({'text/html': blob});
+        navigator.clipboard.write([item]);
+        deleteSelectedNotes();
+    }
+}
+
+async function maybePasteNotes(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'v' && !currentlyEditing) {
+        e.preventDefault();
+        console.log("paste notes");
+        try {
+            const clipboardItems = await navigator.clipboard.read();
+            for (const clipboardItem of clipboardItems) {
+                if (clipboardItem.types.includes('text/html')) {
+                    const blob = await clipboardItem.getType('text/html');
+                    const text = await blob.text();
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = text;
+                    const notes = tempDiv.querySelectorAll('.note');
+
+                    // Calculate minimum position of original notes
+                    let minX = Infinity, minY = Infinity;
+                    notes.forEach(note => {
+                        minX = Math.min(minX, parseInt(note.style.left));
+                        minY = Math.min(minY, parseInt(note.style.top));
+                    });
+
+                    // Get scroll offsets
+                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                    // Calculate offset to center around mouse position, including scroll offsets
+                    const offsetX = evenNumber(clientX + scrollLeft - minX , snapGridSize);
+                    const offsetY = evenNumber(clientY + scrollTop - minY, snapGridSize);
+
+
+                    let id_counter = 0;
+
+                    clearSelection();
+
+                    notes.forEach(note => {
+                        const newNote = note.cloneNode(true); // deep clone
+                        newNote.style.left = `${parseInt(note.style.left) + offsetX}px`;
+                        newNote.style.top = `${parseInt(note.style.top) + offsetY}px`;
+                        newNote.setAttribute('data-id', Date.now().toString() + '-' + id_counter);
+                        id_counter++;
+
+                        canvas.appendChild(newNote);
+                        sendToBackend(newNote);
+                        selectNote(newNote);
+                    });
+
+
+                    tempDiv.remove();
+
+                    updateCanvasSize();
+                }
+            }
+        } catch (err) {
+            console.error('Failed to read clipboard contents: ', err);
+        }
+    }
+}
+
 window.createNoteWithImage = createNoteWithImage;
+window.maybeCopySelectedNotes = maybeCopySelectedNotes;
+window.maybePasteNotes = maybePasteNotes;

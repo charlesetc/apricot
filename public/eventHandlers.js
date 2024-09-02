@@ -327,6 +327,11 @@ function handleKeyDown(e) {
         e.preventDefault();
         toggleSearchOverlay();
     }
+
+    maybeCopySelectedNotes(e);
+    maybePasteNotes(e);
+    maybeCutSelectedNotes(e);
+
 }
 
 function moveSelection(direction) {
