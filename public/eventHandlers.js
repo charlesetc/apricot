@@ -124,6 +124,7 @@ function handleCanvasMouseMove(e) {
     
     if (isSelecting && selectionBox) {
         updateSelectionBox(e.clientX + scrollLeft, e.clientY + scrollTop);
+        highlightSelection();
     }
 }
 
@@ -557,13 +558,15 @@ async function handleHtmlPaste(e, clipboardItem) {
     clearSelection();
 
     notes.forEach(note => {
-        const newNote = note.cloneNode(true); // deep clone
-        newNote.style.left = `${parseInt(note.style.left) + offsetX}px`;
-        newNote.style.top = `${parseInt(note.style.top) + offsetY}px`;
-        newNote.setAttribute('data-id', Date.now().toString() + '-' + id_counter);
+        const newNote = createNoteElement(
+            Date.now().toString() + '-' + id_counter,
+            parseInt(note.style.left) + offsetX,
+            parseInt(note.style.top) + offsetY,
+            note.textContent
+        );
+
         id_counter++;
 
-        canvas.appendChild(newNote);
         sendToBackend(newNote);
         selectNote(newNote);
     });
@@ -625,3 +628,11 @@ function stopBoxSelection() {
 // Add global mouseup event listener
 document.addEventListener('mouseup', stopCanvasDragging);
 document.addEventListener('mouseup', stopBoxSelection);
+
+
+window.addEventListener("blur", function(event) {
+    if (event.target == window) {
+        clearSelection();
+        clearSelectionBox();
+    }
+});

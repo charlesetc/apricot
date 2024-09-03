@@ -29,11 +29,9 @@ function clearSelectionBox() {
     }
 }
 
-function finalizeSelection() {
-    if (!selectionBox) return;
+function highlightSelection() {    
     const selectionRect = selectionBox.getBoundingClientRect();
     const notes = document.querySelectorAll('.note');
-    
     notes.forEach(note => {
         const noteRect = note.getBoundingClientRect();
         if (rectsIntersect(selectionRect, noteRect)) {
@@ -44,7 +42,12 @@ function finalizeSelection() {
             note.classList.remove('selected');
         }
     });
+}
 
+function finalizeSelection() {
+    if (!selectionBox) return;
+    
+    highlightSelection();
     clearSelectionBox();
 }
 
@@ -86,13 +89,3 @@ function rectsIntersect(rect1, rect2) {
              rect2.top > rect1.bottom ||
              rect2.bottom < rect1.top);
 }
-
-// Make all functions global
-window.createSelectionBox = createSelectionBox;
-window.updateSelectionBox = updateSelectionBox;
-window.finalizeSelection = finalizeSelection;
-window.clearSelectionBox = clearSelectionBox;
-window.selectNote = selectNote;
-window.clearSelection = clearSelection;
-window.toggleNoteSelection = toggleNoteSelection;
-window.rectsIntersect = rectsIntersect;

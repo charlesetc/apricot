@@ -4,7 +4,7 @@ function loadNotes() {
         .then(notes => {
             canvas.innerHTML = ''; // Clear existing notes
             notes.forEach(note => {
-                createNoteElement(note);
+                createNoteElement(note.id, note.x, note.y, note.text);
             });
             updateCanvasSize();
         })
@@ -13,19 +13,21 @@ function loadNotes() {
 
 
 
-function createNoteElement(noteData) {
+function createNoteElement(id, x, y, text) {
     const note = document.createElement('div');
     note.className = 'note';
 
-    note.style.left = `${noteData.x}px`;
-    note.style.top = `${noteData.y}px`;
+    note.style.left = `${x}px`;
+    note.style.top = `${y}px`;
     
-    note.setAttribute('data-id', noteData.id);
+    note.setAttribute('data-id', id);
 
-    initializeNoteContents(note, noteData.text);
+    initializeNoteContents(note, text);
 
     note.addEventListener('mousedown', handleNoteMouseDown);
     canvas.appendChild(note);
+
+    return note;
 }
 
 function initializeNoteContents(note, text) {
@@ -115,33 +117,9 @@ var currentlyEditing = null;
 
 function createNote(x, y, text = null) {
     clearSelection();
-    const note = document.createElement('div');
-    note.className = 'note';
-
-    note.style.left = `${x}px`;
-    note.style.top = `${y}px`;
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'note-input';
-    input.addEventListener('keydown', handleInput);
-    input.addEventListener('input', resizeInput);
-    input.addEventListener('blur', () => saveNote(note));
-
-    if (text) {
-        input.value = text;
-    }
-
-    note.appendChild(input);
-    canvas.appendChild(note);
-
-    note.addEventListener('mousedown', handleNoteMouseDown);
-
-    input.focus();
-    note.classList.add('editing');
+    const note = createNoteElement(Date.now().toString(), x, y, text || '');
+    editNote(note);
     updateCanvasSize();
-
-    currentlyEditing = note;
 }
 
 window.createNote = createNote;
@@ -211,7 +189,7 @@ function editNote(noteOrEvent) {
         input.style.height = input.scrollHeight + 'px';
     } else {
         input.type = 'text';
-        input.style.width = `${text.length}ch`;
+        input.style.width = `${Math.max(text.length, 2)}ch`;
     }
     
     input.addEventListener('keydown', handleInput);
@@ -220,35 +198,25 @@ function editNote(noteOrEvent) {
 
     note.innerHTML = '';
     note.appendChild(input);
-    input.focus();
+    
     if (input.tagName === 'INPUT') {
         input.setSelectionRange(input.value.length, input.value.length);
     } else {
         input.setSelectionRange(input.value.length, input.value.length);
     }
-
+    
     note.classList.add('editing');
     
+    clearSelection();
+    
+    input.focus();
     // Set the currentlyEditing variable
     currentlyEditing = note;
 }
 
 
 function createNoteWithImage(imageUrl, x, y) {
-    const note = document.createElement('div');
-    note.className = 'note';
-    
-    console.log("x,y", x, y);
-
-    note.style.left = `${x}px`;
-    note.style.top = `${y}px`;
-    note.setAttribute('data-id', Date.now().toString());
-
-    initializeNoteContents(note, `![Pasted Image](${imageUrl})`);
-
-    note.addEventListener('mousedown', handleNoteMouseDown);
-    canvas.appendChild(note);
-
+    const note = createNoteElement(Date.now().toString(), x, y, `![Pasted Image](${imageUrl})`);
     sendToBackend(note);
     updateCanvasSize();
 }
