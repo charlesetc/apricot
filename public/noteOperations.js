@@ -319,7 +319,7 @@ function maybeCutSelectedNotes(e) {
 }
 
 async function maybePasteNotes(e) {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'v' && !currentlyEditing) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'v') {
         e.preventDefault();
         console.log("paste notes");
         try {
@@ -343,10 +343,20 @@ async function maybePasteNotes(e) {
                     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
                     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-                    // Calculate offset to center around mouse position, including scroll offsets
-                    const offsetX = evenNumber(clientX + scrollLeft - minX , snapGridSize);
-                    const offsetY = evenNumber(clientY + scrollTop - minY, snapGridSize);
+                    let offsetX, offsetY;
 
+                    if (currentlyEditing) {
+                        offsetX = evenNumber(parseInt(currentlyEditing.style.left) + scrollLeft - minX , snapGridSize);
+                        offsetY = evenNumber(parseInt(currentlyEditing.style.top) + scrollTop - minY, snapGridSize);
+
+                        saveNote(currentlyEditing)
+                        currentlyEditing = null;
+                        clearSelection();
+                    } else {
+                        // Calculate offset to center around mouse position, including scroll offsets
+                        offsetX = evenNumber(clientX + scrollLeft - minX , snapGridSize);
+                        offsetY = evenNumber(clientY + scrollTop - minY, snapGridSize);
+                    }
 
                     let id_counter = 0;
 
@@ -375,7 +385,3 @@ async function maybePasteNotes(e) {
         }
     }
 }
-
-window.createNoteWithImage = createNoteWithImage;
-window.maybeCopySelectedNotes = maybeCopySelectedNotes;
-window.maybePasteNotes = maybePasteNotes;

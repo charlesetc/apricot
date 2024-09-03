@@ -473,6 +473,7 @@ function handleInput(e) {
             note.remove();
         }
     }
+
 }
 
 async function handlePaste(e) {
@@ -546,15 +547,3 @@ function stopBoxSelection() {
 // Add global mouseup event listener
 document.addEventListener('mouseup', stopCanvasDragging);
 document.addEventListener('mouseup', stopBoxSelection);
-
-
-// Make all functions global
-window.handleCanvasMouseDown = handleCanvasMouseDown;
-window.handleCanvasMouseMove = handleCanvasMouseMove;
-window.handleCanvasMouseUp = handleCanvasMouseUp;
-window.handleKeyDown = handleKeyDown;
-window.handleInput = handleInput;
-window.moveSelection = moveSelection;
-window.handlePaste = handlePaste;
-window.handleKeyDown = handleKeyDown;
-window.isCanvasDragging = isCanvasDragging;
