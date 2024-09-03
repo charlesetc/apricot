@@ -329,7 +329,6 @@ function handleKeyDown(e) {
     }
 
     maybeCopySelectedNotes(e);
-    maybePasteNotes(e);
     maybeCutSelectedNotes(e);
 
 }
@@ -476,42 +475,121 @@ function handleInput(e) {
 
 }
 
+async function handleImagePaste(e, clipboardItem, type) {
+    e.preventDefault();
+
+    const blob = await clipboardItem.getType(type);
+    const uuid = crypto.randomUUID();
+    const formData = new FormData();
+    formData.append('image', blob, `pasted_image_${uuid}.png`);
+
+    try {
+        const response = await fetch('/api/upload-image', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+
+        // Get the current scroll position
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Calculate the position for the new note
+        let x = clientX + scrollLeft;
+        let y = clientY + scrollTop;
+
+
+        if (currentlyEditing) {
+            const note = currentlyEditing;
+
+            x = parseInt(note.style.left) + scrollLeft;
+            y = parseInt(note.style.top) + scrollTop;
+
+            saveNote(note);
+            currentlyEditing = null;
+            clearSelection();
+        }
+        
+        createNoteWithImage(data.imageUrl, x, y);
+    } catch (error) {
+        console.error('Error uploading image:', error);
+    }
+    return;
+}
+
+async function handleHtmlPaste(e, clipboardItem) {
+    e.preventDefault();
+
+    const blob = await clipboardItem.getType('text/html');
+    const text = await blob.text();
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = text;
+    const notes = tempDiv.querySelectorAll('.note');
+
+    // Calculate minimum position of original notes
+    let minX = Infinity, minY = Infinity;
+    notes.forEach(note => {
+        minX = Math.min(minX, parseInt(note.style.left));
+        minY = Math.min(minY, parseInt(note.style.top));
+    });
+
+    // Get scroll offsets
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    let offsetX, offsetY;
+
+    if (currentlyEditing) {
+        offsetX = evenNumber(parseInt(currentlyEditing.style.left) + scrollLeft - minX , snapGridSize);
+        offsetY = evenNumber(parseInt(currentlyEditing.style.top) + scrollTop - minY, snapGridSize);
+
+        saveNote(currentlyEditing)
+        currentlyEditing = null;
+        clearSelection();
+    } else {
+        // Calculate offset to center around mouse position, including scroll offsets
+        offsetX = evenNumber(clientX + scrollLeft - minX , snapGridSize);
+        offsetY = evenNumber(clientY + scrollTop - minY, snapGridSize);
+    }
+
+    let id_counter = 0;
+
+    clearSelection();
+
+    notes.forEach(note => {
+        const newNote = note.cloneNode(true); // deep clone
+        newNote.style.left = `${parseInt(note.style.left) + offsetX}px`;
+        newNote.style.top = `${parseInt(note.style.top) + offsetY}px`;
+        newNote.setAttribute('data-id', Date.now().toString() + '-' + id_counter);
+        id_counter++;
+
+        canvas.appendChild(newNote);
+        sendToBackend(newNote);
+        selectNote(newNote);
+    });
+
+
+    tempDiv.remove();
+
+    updateCanvasSize();
+}
+
 async function handlePaste(e) {
     const clipboardItems = await navigator.clipboard.read();
     
     for (const clipboardItem of clipboardItems) {
+
+        if (clipboardItem.types.includes('text/html')) {
+            await handleHtmlPaste(e, clipboardItem);
+            return;
+        }
+
         for (const type of clipboardItem.types) {
             if (type.startsWith('image/')) {
-                // only prevent default if the clipboard item is an image
-                e.preventDefault();
-
-                const blob = await clipboardItem.getType(type);
-                const uuid = crypto.randomUUID();
-                const formData = new FormData();
-                formData.append('image', blob, `pasted_image_${uuid}.png`);
-
-                try {
-                    const response = await fetch('/api/upload-image', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await response.json();
-
-                    // Get the current scroll position
-                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    
-                    // Calculate the position for the new note
-                    const x = clientX + scrollLeft;
-                    const y = clientY + scrollTop;
-                    
-                    createNoteWithImage(data.imageUrl, x, y);
-                } catch (error) {
-                    console.error('Error uploading image:', error);
-                }
-                return;
+                await handleImagePaste(e, clipboardItem, type);
             }
         }
+
     }
 }
 
