@@ -91,6 +91,10 @@ body.canvas-page {
   font-size: inherit;
 }
 
+.note.checkbox input[type="checkbox"] {
+  margin-right: 8px;
+  margin-left: 0px;
+}
 .note.header {
   font-weight: bold;
 }

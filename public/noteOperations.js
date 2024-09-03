@@ -39,7 +39,7 @@ function initializeNoteContents(note, text) {
 
     maybeCreateImage(note, text, pre);
     maybeCreateLinkNote(note, text, pre);
-    // maybeCreateEmoji(note, text, pre);
+    maybeCreateCheckbox(note, text, pre);
 
     if (text.startsWith('#')) {
         note.classList.add('header');
@@ -234,6 +234,30 @@ function maybeCreateImage(note, text, pre) {
         note.classList.add('image');
     } else {
         note.classList.remove('image');
+    }
+}
+
+function maybeCreateCheckbox(note, text, pre) {
+    if (text.match(/^\[[xX ]?\]/)) {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = text.match(/^\[[xX]\]/) !== null;
+        checkbox.addEventListener('mouseup', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            const newText = checkbox.checked ? '[] ' : '[x] ';
+            const pre = note.querySelector('pre');
+            pre.textContent = newText + pre.textContent.replace(/^\[[xX ]?\]\s*/, '');
+            saveNote(note);
+        });
+        note.appendChild(checkbox);
+
+        const textContent = document.createElement('span');
+        textContent.textContent = text.replace(/^\[[xX ]?\]\s*/, '');
+        note.appendChild(textContent);
+
+        pre.style.display = 'none';
+        note.classList.add('checkbox');
     }
 }
 
