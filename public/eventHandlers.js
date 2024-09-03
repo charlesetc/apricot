@@ -160,9 +160,7 @@ function handleCanvasMouseUp(e) {
                 const listNoteRect = listNoteAbove.getBoundingClientRect();
                 let newNoteX = listNoteRect.left + scrollLeft;
                 let newNoteY = listNoteRect.top + scrollTop + snapGridSize * 2;
-                
-                const bulletStr = listNoteAbove.textContent.trim()[0]; // Get the bullet character
-                createNote(newNoteX, newNoteY, `${bulletStr} `);
+                createNote(newNoteX, newNoteY, `${listNoteAbove.bulletStr} `);
             } else {
                 let newNoteX = evenNumber(e.clientX + scrollLeft, snapGridSize);
                 let newNoteY = evenNumber(e.clientY + scrollTop, snapGridSize);

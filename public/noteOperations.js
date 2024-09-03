@@ -39,22 +39,23 @@ function initializeNoteContents(note, text) {
 
     maybeCreateImage(note, text, pre);
     maybeCreateLinkNote(note, text, pre);
-    maybeCreateCheckbox(note, text, pre);
-
+    
     if (text.startsWith('#')) {
         note.classList.add('header');
     } else {
         note.classList.remove('header');
     }
-
+    
     if (text.startsWith('• ') || text == '•'
-        || text.startsWith('* ') || text == '*'
-        || text.startsWith('- ') || text == '-') {
+    || text.startsWith('* ') || text == '*'
+    || text.startsWith('- ') || text == '-') {
         note.classList.add('list');
         note.bulletStr = text.charAt(0);
     } else {
         note.classList.remove('list');
     }
+    
+    maybeCreateCheckbox(note, text, pre);
 }
 
 
@@ -258,6 +259,8 @@ function maybeCreateCheckbox(note, text, pre) {
 
         pre.style.display = 'none';
         note.classList.add('checkbox');
+        note.classList.add('list');
+        note.bulletStr = '[]';
     }
 }
 
