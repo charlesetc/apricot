@@ -322,6 +322,33 @@ function handleKeyDown(e) {
         }
     } else if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
+    } else if (e.key == 'l' && (e.ctrlKey)) {
+        // Rotate through possible bullet types
+
+        e.preventDefault();
+        if (selectedNotes.size === 0) return;
+
+        let first_note = Array.from(selectedNotes)[0];
+        
+        selectedNotes.forEach(note => {
+            if (parseInt(first_note.style.top) > parseInt(note.style.top)) {
+                first_note = note;
+            }
+        });
+
+        const bullets = ['[]', '•', '-', ''];
+        console.log(first_note, first_note.bulletStr);
+        const bulletIndex = bullets.indexOf(first_note.bulletStr || '');
+        let newBullet = bullets[(bulletIndex + 1) % bullets.length];
+        if (newBullet !== '') {
+            newBullet = `${newBullet} `;
+        }
+
+        selectedNotes.forEach(note => {
+            const pre = note.querySelector('pre');
+            pre.textContent = newBullet + pre.textContent.replace(/^(\[[xX ]?\]|[•*-])\s*/, '');
+            saveNote(note);
+        });
     } else if ((e.metaKey || e.ctrlKey) && e.key === '/') {
         e.preventDefault();
         toggleSearchOverlay();
@@ -471,6 +498,7 @@ function handleInput(e) {
             note.remove();
         }
     }
+        
 
 }
 

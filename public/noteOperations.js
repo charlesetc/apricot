@@ -31,11 +31,18 @@ function createNoteElement(id, x, y, text) {
 }
 
 function initializeNoteContents(note, text) {
+
+    if (text.startsWith('* ') || text == '*') {
+        text = text.replace(/^\* /, '• ');
+    }
+
     const pre = document.createElement('pre');
     pre.textContent = text;
     note.innerHTML = '';
     note.appendChild(pre);
     note.setAttribute('data-id', note.getAttribute('data-id') || Date.now().toString());
+
+
 
     maybeCreateImage(note, text, pre);
     maybeCreateLinkNote(note, text, pre);
@@ -47,11 +54,11 @@ function initializeNoteContents(note, text) {
     }
     
     if (text.startsWith('• ') || text == '•'
-    || text.startsWith('* ') || text == '*'
     || text.startsWith('- ') || text == '-') {
         note.classList.add('list');
         note.bulletStr = text.charAt(0);
     } else {
+        note.bulletStr = '';
         note.classList.remove('list');
     }
 
@@ -271,6 +278,9 @@ function maybeCreateCheckbox(note, text, pre) {
             note.classList.add('checked');
         }
         note.bulletStr = '[]';
+    } else {
+        note.classList.remove('checkbox');
+        note.classList.remove('checked');
     }
 }
 
