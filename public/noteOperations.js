@@ -54,7 +54,7 @@ function initializeNoteContents(note, text) {
     } else {
         note.classList.remove('list');
     }
-    
+
     maybeCreateCheckbox(note, text, pre);
 }
 
@@ -249,6 +249,13 @@ function maybeCreateCheckbox(note, text, pre) {
             const newText = checkbox.checked ? '[] ' : '[x] ';
             const pre = note.querySelector('pre');
             pre.textContent = newText + pre.textContent.replace(/^\[[xX ]?\]\s*/, '');
+
+            if (checkbox.checked) {
+                note.classList.remove('checked');
+            } else {
+                note.classList.add('checked');
+            }
+
             saveNote(note);
         });
         note.appendChild(checkbox);
@@ -260,6 +267,9 @@ function maybeCreateCheckbox(note, text, pre) {
         pre.style.display = 'none';
         note.classList.add('checkbox');
         note.classList.add('list');
+        if (checkbox.checked) {
+            note.classList.add('checked');
+        }
         note.bulletStr = '[]';
     }
 }
