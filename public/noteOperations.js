@@ -134,7 +134,12 @@ window.createNote = createNote;
 
 function isMeaninglessContent(text) {
     text = text.trim()
-    return text.length == 0 || (text.length == 1 && [ '*', '-', '•', ].includes(text));
+    return (
+        text.length == 0
+        || (text.length == 1 && [ '*', '-', '•', ].includes(text))
+        || (text.length == 2 && [ '[]' ].includes(text))
+        || (text.length == 3 && [ '[x]' ].includes(text))
+    )
 }
 
 function saveNote(note, { doNotRemove } = {}) {
