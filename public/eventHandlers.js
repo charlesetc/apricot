@@ -443,14 +443,14 @@ function handleInput(e) {
             const offset = e.shiftKey ? -1 * snapGridSize : snapGridSize;
             note.style.left = `${parseInt(note.style.left) + offset}px`
             
-                const input = e.target;
-                if (input.value.match(/^[•*-]\s*/)) {
-                    input.value = input.value.replace(/^[•*-]\s*/, '');
-                    note.classList.remove('list');
-                }
+            const input = e.target;
+            if (input.value.match(/^[•*-]\s*/)) {
+                input.value = input.value.replace(/^[•*-]\s*/, '');
+                note.classList.remove('list');
+            }
 
             if (note.getAttribute('data-id')) {
-                saveNote(note);
+                saveNote(note, { doNotRemove: true });
                 editNote(note);
             }
         }

@@ -137,7 +137,7 @@ function isMeaninglessContent(text) {
     return text.length == 0 || (text.length == 1 && [ '*', '-', '•', ].includes(text));
 }
 
-function saveNote(note) {
+function saveNote(note, { doNotRemove } = {}) {
     let text;
 
     if (note.querySelector('.note-input')) {
@@ -148,7 +148,7 @@ function saveNote(note) {
         text = pre.textContent;
     }
 
-    if (isMeaninglessContent(text)) {
+    if (isMeaninglessContent(text) && !doNotRemove) {
         note.remove();
     } else {
         initializeNoteContents(note, text);
