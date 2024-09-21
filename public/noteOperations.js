@@ -273,6 +273,7 @@ function maybeCreateCheckbox(note, text, pre) {
         note.appendChild(checkbox);
 
         const textContent = document.createElement('span');
+        textContent.classList.add('checkbox-text');
         textContent.textContent = text.replace(/^\[[xX ]?\]\s*/, '');
         note.appendChild(textContent);
 
@@ -311,7 +312,12 @@ function maybeCreateLinkNote(note, text, pre) {
 
 function copySelectedNotes() {
     const notesHtml = Array.from(selectedNotes)
-        .map(note => note.outerHTML.replace(/\sdata-id="[^"]*"/, ''))
+        .map(note => {
+            const clonedNote = note.cloneNode(true);
+            const spans = clonedNote.querySelectorAll('span.checkbox-text');
+            spans.forEach(span => span.remove());
+            return clonedNote.outerHTML.replace(/\sdata-id="[^"]*"/, '');
+        })
         .join('');
     const blob = new Blob([notesHtml], {type: 'text/html'});
     const item = new ClipboardItem({'text/html': blob});
