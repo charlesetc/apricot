@@ -12,7 +12,6 @@ function loadNotes() {
 }
 
 
-
 function createNoteElement(id, x, y, text) {
     const note = document.createElement('div');
     note.className = 'note';
@@ -50,6 +49,7 @@ function initializeNoteContents(note, text) {
 
     maybeCreateImage(note, text, pre);
     maybeCreateLinkNote(note, text, pre);
+    maybeCreateStrikethrough(note, text, pre);
     
     if (text.startsWith('#')) {
         note.classList.add('header');
@@ -254,6 +254,7 @@ function maybeCreateImage(note, text, pre) {
     }
 }
 
+
 function maybeCreateCheckbox(note, text, pre) {
     if (text.match(/^\[[xX ]?\]/)) {
         const checkbox = document.createElement('input');
@@ -277,7 +278,7 @@ function maybeCreateCheckbox(note, text, pre) {
         note.appendChild(checkbox);
 
         const textContent = document.createElement('span');
-        textContent.classList.add('checkbox-text');
+        textContent.classList.add('visual-element-only');
         textContent.textContent = text.replace(/^\[[xX ]?\]\s*/, '');
         note.appendChild(textContent);
 
@@ -314,11 +315,30 @@ function maybeCreateLinkNote(note, text, pre) {
     }
 }
 
+
+function maybeCreateStrikethrough(note, text, pre) {
+    if (text.match(/^~.*?~$/)) {
+        const strikethrough_note = document.createElement('span');
+        strikethrough_note.classList.add('visual-element-only')
+        const content = text.match(/^~(.*?)~$/);
+        if (content && content[1]) {
+            strikethrough_note.textContent = content[1];
+            strikethrough_note.style.textDecoration = 'line-through';
+            note.appendChild(strikethrough_note);
+        }
+        pre.style.display = 'none';
+        note.classList.add('link');
+    } else {
+        note.classList.remove('link');
+    }
+}
+
+
 function copySelectedNotes() {
     const notesHtml = Array.from(selectedNotes)
         .map(note => {
             const clonedNote = note.cloneNode(true);
-            const spans = clonedNote.querySelectorAll('span.checkbox-text');
+            const spans = clonedNote.querySelectorAll('.visual-element-only');
             spans.forEach(span => span.remove());
             return clonedNote.outerHTML.replace(/\sdata-id="[^"]*"/, '');
         })
