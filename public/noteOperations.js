@@ -309,27 +309,26 @@ function maybeCreateLinkNote(note, text, pre) {
     }
 }
 
+function copySelectedNotes() {
+    const notesHtml = Array.from(selectedNotes)
+        .map(note => note.outerHTML.replace(/\sdata-id="[^"]*"/, ''))
+        .join('');
+    const blob = new Blob([notesHtml], {type: 'text/html'});
+    const item = new ClipboardItem({'text/html': blob});
+    navigator.clipboard.write([item]);
+}
+
 function maybeCopySelectedNotes(e) {
     if ((e.metaKey || e.ctrlKey) && e.key === 'c' && selectedNotes.size > 0) {
         e.preventDefault();
-        const notesHtml = Array.from(selectedNotes)
-            .map(note => note.outerHTML.replace(/\sdata-id="[^"]*"/, ''))
-            .join('');
-        const blob = new Blob([notesHtml], {type: 'text/html'});
-        const item = new ClipboardItem({'text/html': blob});
-        navigator.clipboard.write([item]);
+        copySelectedNotes();
     }
 }
 
 function maybeCutSelectedNotes(e) {
     if ((e.metaKey || e.ctrlKey) && e.key === 'x' && !currentlyEditing) {
         e.preventDefault();
-        const notesHtml = Array.from(selectedNotes)
-            .map(note => note.outerHTML.replace(/\sdata-id="[^"]*"/, ''))
-            .join('');
-        const blob = new Blob([notesHtml], {type: 'text/html'});
-        const item = new ClipboardItem({'text/html': blob});
-        navigator.clipboard.write([item]);
+        copySelectedNotes();
         deleteSelectedNotes();
     }
 }
