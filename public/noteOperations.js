@@ -36,6 +36,10 @@ function initializeNoteContents(note, text) {
         text = text.replace(/^\* /, '• ');
     }
 
+    if (/^(https?:\/\/[^\s]+)$/.test(text)) {
+        text = `[${text}](${text})`;
+    }
+
     const pre = document.createElement('pre');
     pre.textContent = text;
     note.innerHTML = '';

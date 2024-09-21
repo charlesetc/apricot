@@ -73,7 +73,7 @@ function handleCanvasMouseDown(e) {
     } else if (e.target.closest('.note')) {
         const clickedNote = e.target.closest('.note');
 
-        if (clickedNote.classList.contains('link') && !e.metaKey && !e.shiftKey) {
+        if (clickedNote.classList.contains('link') && e.target.tagName === 'A' && !e.metaKey && !e.shiftKey) {
             window.open(clickedNote.querySelector('a').href, '_blank');
             return;
         }
