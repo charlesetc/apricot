@@ -32,6 +32,13 @@
   }
 }
 
+* {
+  box-sizing: border-box;
+}
+
+input[type="text"] {
+  box-sizing: content-box;
+}
 body,
 html {
   margin: 0;
@@ -70,7 +77,7 @@ body.canvas-page {
     border: 2px solid transparent;
   border-radius: 4px;
   padding: 3px 5px;
-  min-width: 150px;
+  min-width: 160px;
   cursor: move;
   box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
   font-family: 'Iosevka Medium', 'Courier New', Courier, monospace;
@@ -283,6 +290,19 @@ body.canvas-page {
 .meta-or-shift-pressed .note.link a {
   cursor: move;
 }
+.note {
+  box-sizing: border-box;
+}
 body.right-click-dragging {
   cursor: grabbing;
+}
+.note.checkbox:not(.editing) {
+  padding-left: 24px;
+}
+
+.note input[type="checkbox"] {
+  cursor: pointer;
+  position: absolute;
+  left: 4px;
+  top: 2px;
 }
