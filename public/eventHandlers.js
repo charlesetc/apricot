@@ -73,11 +73,6 @@ function handleCanvasMouseDown(e) {
     } else if (e.target.closest('.note')) {
         const clickedNote = e.target.closest('.note');
 
-        if (clickedNote.classList.contains('link') && e.target.tagName === 'A' && !e.metaKey && !e.shiftKey) {
-            window.open(clickedNote.querySelector('a').href, '_blank');
-            return;
-        }
-
         if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
             if (!selectedNotes.has(clickedNote)) {
                 if (!e.ctrlKey && !e.shiftKey) {
@@ -85,8 +80,6 @@ function handleCanvasMouseDown(e) {
                 }
                 selectNote(clickedNote);
             }
-            startDragging(e);
-            dragStartTime = Date.now();
         } else {
             e.target.focus();
         }
@@ -149,6 +142,12 @@ function handleCanvasMouseUp(e) {
             editNote(e);
         }
     } else if (e.target.closest('.note')) {
+        
+        if (e.target.tagName === 'A' && !e.metaKey && !e.shiftKey) {
+            window.open(e.target.href, '_blank');
+            return;
+        }
+
         editNote(e);
     } else if (e.target === canvas) {
         let dx = (e.clientX + scrollLeft) - mouseDownPos.x;
