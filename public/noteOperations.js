@@ -327,9 +327,9 @@ function maybeCreateStrikethrough(note, text, pre) {
             note.appendChild(strikethrough_note);
         }
         pre.style.display = 'none';
-        note.classList.add('link');
+        note.classList.add('strikethrough');
     } else {
-        note.classList.remove('link');
+        note.classList.remove('strikethrough');
     }
 }
 
