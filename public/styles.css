@@ -45,7 +45,8 @@ html {
   padding: 0;
   height: 100%;
   font-size: 14px;
-  font-family: 'Iosevka Medium', 'Courier New', Courier, monospace;
+  font-family: 'Iosevka Medium', 'Iosevka', 'Courier New', Courier, monospace;
+    font-weight: medium;
   background-color: var(--bg-color);
   color: var(--text-color);
 }
@@ -80,7 +81,6 @@ body.canvas-page {
   min-width: 160px;
   cursor: move;
   box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
-  font-family: 'Iosevka Medium', 'Courier New', Courier, monospace;
   color: var(--text-color);
 }
 
@@ -95,7 +95,7 @@ body.canvas-page {
   white-space: pre-wrap;
   word-wrap: break-word;
   font-family: inherit;
-  font-size: inherit;
+    font-size: inherit;
 }
 
 .note.checkbox input[type="checkbox"] {

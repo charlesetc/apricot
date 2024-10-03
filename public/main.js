@@ -11,47 +11,44 @@ let clientX = 0;
 let clientY = 0;
 
 function isImageMarkdown(text) {
-    const imageRegex = /!\[.*?\]\((.*?)\)/;
-    return imageRegex.test(text);
+  const imageRegex = /!\[.*?\]\((.*?)\)/;
+  return imageRegex.test(text);
 }
 
-
 function initializeApp() {
-    canvas = document.getElementById('canvas');
-    isDragging = false;
-    isSelecting = false;
-    currentNote = null;
-    selectedNotes = new Set();
-    selectionStart = { x: 0, y: 0 };
-    mouseDownPos = { x: 0, y: 0 };
+  canvas = document.getElementById("canvas");
+  isDragging = false;
+  isSelecting = false;
+  currentNote = null;
+  selectedNotes = new Set();
+  selectionStart = { x: 0, y: 0 };
+  mouseDownPos = { x: 0, y: 0 };
 
-    const urlParams = new URLSearchParams(window.location.search);
-    canvasId = urlParams.get('id');
+  const urlParams = new URLSearchParams(window.location.search);
+  canvasId = urlParams.get("id");
 
-    if (!canvasId) {
-        window.location.href = '/index.html';
-    }
+  if (!canvasId) {
+    window.location.href = "/index.html";
+  }
 
-    canvas.addEventListener('mousedown', handleCanvasMouseDown);
-    canvas.addEventListener('mousemove', handleCanvasMouseMove);
-    canvas.addEventListener('mouseup', handleCanvasMouseUp);
-    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-    window.addEventListener('resize', updateCanvasSize);
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('paste', handlePaste);
+  canvas.addEventListener("mousedown", handleCanvasMouseDown);
+  canvas.addEventListener("mousemove", handleCanvasMouseMove);
+  canvas.addEventListener("mouseup", handleCanvasMouseUp);
+  canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+  window.addEventListener("resize", updateCanvasSize);
+  document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("paste", handlePaste);
 
+  window.addEventListener("mousemove", function (event) {
+    clientX = event.clientX;
+    clientY = event.clientY;
+  });
 
-
-    window.addEventListener("mousemove", function(event) {
-        clientX = event.clientX;
-        clientY = event.clientY;
-    });
-
-    loadNotes();
+  loadNotes();
 }
 
 // Make functions global
 window.initializeApp = initializeApp;
 
 // Call initializeApp when the DOM is loaded
-document.addEventListener('DOMContentLoaded', initializeApp);
+document.addEventListener("DOMContentLoaded", initializeApp);
