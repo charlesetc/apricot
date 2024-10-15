@@ -21,7 +21,8 @@ const db = new sqlite3.Database('./notes.db', (err) => {
         console.log('Connected to the SQLite database.');
         db.run(`CREATE TABLE IF NOT EXISTS canvases (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL
+            name TEXT NOT NULL,
+            Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
         db.run(`CREATE TABLE IF NOT EXISTS notes (
             id TEXT PRIMARY KEY,
@@ -47,7 +48,7 @@ app.post('/api/canvases', (req, res) => {
 });
 
 app.get('/api/canvases', (req, res) => {
-    db.all('SELECT * FROM canvases', [], (err, rows) => {
+    db.all(`SELECT * FROM canvases ORDER BY Timestamp DESC`, [], (err, rows) => {
         if (err) {
             res.status(500).json({ error: err.message });
             return;

@@ -196,8 +196,6 @@ let searchInput = document.getElementById('canvas-search');
 let searchResults = document.getElementById('search-results');
 
 function toggleSearchOverlay() {
-
-
     fetch('/api/canvases')
     .then(response => response.json())
     .then(canvases => {
@@ -624,6 +622,18 @@ async function handlePaste(e) {
 
 searchInput.addEventListener('input', searchCanvases);
 
+// on blur, un-show search
+document.body.addEventListener('click', (e) => {
+    if (e.target.closest('#search-overlay') && !e.target.closest('.overlay-content')) {
+        toggleSearchOverlay();
+        fetch('/api/canvases')
+        .then(response => response.json())
+        .then(canvases => {
+            displaySearchResults(canvases);
+        });
+    }
+})
+
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && searchOverlay.style.display === 'block') {
         toggleSearchOverlay();
@@ -631,7 +641,7 @@ document.addEventListener('keydown', (e) => {
         .then(response => response.json())
         .then(canvases => {
             displaySearchResults(canvases);
-        });    
+        });
     } else if (e.key === 'Meta' || e.key === 'Shift') {
         document.body.classList.add('meta-or-shift-pressed');
     }

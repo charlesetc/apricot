@@ -70,14 +70,13 @@ function initializeNoteContents(note, text) {
 }
 
 
-// Add this new function
 function handleNoteMouseDown(e) {
     if (e.button === 1) {
         return;
     }
 
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        return; // Allow normal interaction with input fields
+        if (e.target.type != 'checkbox') return; // Allow normal interaction with non-checkbox input fields
     }
 
     const note = e.target.closest('.note');
@@ -93,7 +92,6 @@ function handleNoteMouseDown(e) {
     e.preventDefault(); // Prevent text selection
 }
 
-// Add this new function
 function handleNoteDrag(e) {
     const dx = e.clientX - dragStartPos.x;
     const dy = e.clientY - dragStartPos.y;
@@ -106,7 +104,6 @@ function handleNoteDrag(e) {
     }
 }
 
-// Add this new function
 function handleNoteMouseUp(e) {
     document.removeEventListener('mousemove', handleNoteDrag);
     document.removeEventListener('mouseup', handleNoteMouseUp);
@@ -174,8 +171,13 @@ function saveNote(note, { doNotRemove } = {}) {
 }
 
 function editNote(noteOrEvent) {
+    console.log("Editing note " + noteOrEvent);
     let note;
     if (noteOrEvent instanceof Event) {
+        var target = noteOrEvent.target;
+        if (target.tagName === 'INPUT' && target.type === 'checkbox') {
+            return;
+        }
         note = noteOrEvent.target.closest('.note');
     } else if (noteOrEvent instanceof Element) {
         note = noteOrEvent;
@@ -262,7 +264,6 @@ function maybeCreateCheckbox(note, text, pre) {
         checkbox.checked = text.match(/^\[[xX]\]/) !== null;
         checkbox.addEventListener('mouseup', e => {
             e.preventDefault();
-            e.stopPropagation();
             const newText = checkbox.checked ? '[] ' : '[x] ';
             const pre = note.querySelector('pre');
             pre.textContent = newText + pre.textContent.replace(/^\[[xX ]?\]\s*/, '');
