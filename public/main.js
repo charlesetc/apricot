@@ -15,6 +15,22 @@ function isImageMarkdown(text) {
   return imageRegex.test(text);
 }
 
+function loadTitle() {
+  fetch(`/api/canvases/${canvasId}`)
+      .then(async response => 
+        {
+          return response.json()
+})
+      .then(project => {
+        console.log(project)
+        const titleElement = document.getElementById('canvas-title');
+        if (titleElement) {
+          titleElement.textContent = project.name;
+        }
+      })
+      .catch(error => console.error('Error loading canvas title:', error));
+}
+
 function initializeApp() {
   canvas = document.getElementById("canvas");
   isDragging = false;
@@ -44,6 +60,7 @@ function initializeApp() {
     clientY = event.clientY;
   });
 
+  loadTitle();
   loadNotes();
 }
 

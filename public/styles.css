@@ -175,6 +175,16 @@ body.canvas-page {
   border-radius: 3px;
 }
 
+#canvas-title {
+  position: fixed;
+  top: 10px;
+  left: 80px;
+  border-radius: 3px;
+  margin: 5px 7px;
+  padding: 0px 3px;
+  background: white;
+  font-size: 14px;
+}
 .modal {
   display: none;
   position: fixed;
