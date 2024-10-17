@@ -182,7 +182,7 @@ body.canvas-page {
   border-radius: 3px;
   margin: 5px 7px;
   padding: 0px 3px;
-  background: white;
+  background: var(--bg-color);
   font-size: 14px;
 }
 .modal {
