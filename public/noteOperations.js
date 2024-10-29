@@ -155,7 +155,7 @@ function saveNote(note, { doNotRemove } = {}) {
     }
 
     if (isMeaninglessContent(text) && !doNotRemove) {
-        note.remove();
+        deleteSingleNote(note);
     } else {
         initializeNoteContents(note, text);
         sendToBackend(note);

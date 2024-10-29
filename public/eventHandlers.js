@@ -441,12 +441,13 @@ function handleInput(e) {
             note.style.left = `${parseInt(note.style.left) + offset}px`
             
             const input = e.target;
-            if (input.value.match(/^[•*-]\s*/)) {
-                input.value = input.value.replace(/^[•*-]\s*/, '');
+            const regex = /^(•|-|\[x?\])\s*/;
+            if (input.value.match(regex)) {
+                input.value = input.value.replace(regex, '');
                 note.classList.remove('list');
             }
 
-            if (note.getAttribute('data-id')) {
+            if (note.getAttribute('data-id') && !isMeaninglessContent(input.value)) {
                 saveNote(note, { doNotRemove: true });
                 editNote(note);
             }
@@ -491,8 +492,7 @@ function handleInput(e) {
         e.preventDefault();
         const note = e.target.closest('.note');
         if (note.getAttribute('data-id')) {
-            deleteNoteFromBackend(note.getAttribute('data-id'));
-            note.remove();
+            deleteSingleNote(note);
         }
     }
         
@@ -667,7 +667,7 @@ document.addEventListener('mouseup', stopBoxSelection);
 
 window.addEventListener("blur", function(event) {
     if (event.target == window) {
-        clearSelection();
+        stopBoxSelection();
         clearSelectionBox();
     }
 });

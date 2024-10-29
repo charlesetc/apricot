@@ -20,14 +20,16 @@ function sendToBackend(note) {
     .catch((error) => console.error("Error saving note:", error));
 }
 
-function deleteSelectedNotes() {
-  const deletePromises = Array.from(selectedNotes).map((note) => {
-    const noteId = note.getAttribute("data-id");
-    note.remove();
-    return deleteNoteFromBackend(noteId);
-  });
+function deleteSingleNote(note) {
+  const noteId = note.getAttribute("data-id");
+  if (noteId) {
+    deleteNoteFromBackend(noteId);
+  }
+  note.remove();  
+}
 
-  Promise.all(deletePromises)
+function deleteSelectedNotes() {
+  Promise.all(Array.from(selectedNotes).map(deleteSingleNote))
     .then(() => {
       console.log("All selected notes deleted");
       selectedNotes.clear();
@@ -43,4 +45,5 @@ function deleteNoteFromBackend(noteId) {
     .then((response) => response.json())
     .then((data) => console.log("Note deleted:", data))
     .catch((error) => console.error("Error deleting note:", error));
+
 }
