@@ -85,7 +85,7 @@ function handleCanvasMouseDown(e) {
 
 SCROLL_MULTIPLIER = 1.5;
 
-function handleCanvasMouseMove(e) {
+function handleCanvasMouseMove(e) {    
     if (isCanvasDragging) {
         const dx = e.clientX - lastMouseX;
         const dy = e.clientY - lastMouseY;
@@ -268,12 +268,11 @@ function handleKeyDown(e) {
         }
     } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && 
                !currentlyEditing && 
-               !e.ctrlKey && 
                !e.metaKey) {
         e.preventDefault();
-        if (selectedNotes.size === 1) {
+        if (selectedNotes.size === 1 && !e.ctrlKey) {
             moveSelection(e.key);
-        } else if (selectedNotes.size > 1) {
+        } else if (selectedNotes.size > 1 || e.ctrlKey) {
             const offset = e.shiftKey ? snapGridSize * 5 : snapGridSize;
             selectedNotes.forEach(note => {
                 if (e.key === 'ArrowUp') {
@@ -407,12 +406,24 @@ function moveSelection(direction) {
 function handleInput(e) {
     if (e.key === 'Enter' && !(e.ctrlKey || e.metaKey)) {
         e.preventDefault();
+
+        const offset = e.shiftKey ? -1 * snapGridSize * 2 : snapGridSize * 2;
+        
+
         const note = e.target.closest('.note');
         saveNote(note);
 
         // +1 to go to the next one
         let newNoteX = evenNumber(parseInt(note.style.left), snapGridSize);
-        let newNoteY = evenNumber(parseInt(note.style.top), snapGridSize) + snapGridSize * 2;
+        let newNoteY = evenNumber(parseInt(note.style.top), snapGridSize) + offset;
+
+        let existingNote = document.elementFromPoint(newNoteX - window.scrollX + 4, newNoteY - window.scrollY + 4);
+        existingNote = existingNote ? existingNote.closest('.note') : null;
+        
+        if (existingNote && existingNote !== note && existingNote.style.left === note.style.left) {
+            editNote(existingNote);
+            return;
+        }
 
         if (note.classList.contains('list')) {
             createNote(newNoteX, newNoteY, note.bulletStr + ' ');
@@ -440,7 +451,7 @@ function handleInput(e) {
             
             const input = e.target;
             const regex = /^(•|-|\[x?\])\s*/;
-            if (input.value.match(regex)) {
+            if (input.value.match(regex) && !e.shiftKey) {
                 input.value = input.value.replace(regex, '');
                 note.classList.remove('list');
             }
@@ -456,7 +467,7 @@ function handleInput(e) {
         const offset = e.shiftKey ? -5 * snapGridSize : -1 * snapGridSize;
         note.style.top = `${parseInt(note.style.top) + offset}px`
         if (note.getAttribute('data-id')) {
-            saveNote(note);
+            saveNote(note, { doNotRemove: true });
             editNote(note);
         }
     } else if (e.key === 'ArrowDown' && e.ctrlKey) {
@@ -465,7 +476,7 @@ function handleInput(e) {
         const offset = e.shiftKey ? 5 * snapGridSize : snapGridSize;
         note.style.top = `${parseInt(note.style.top) + offset}px`
         if (note.getAttribute('data-id')) {
-            saveNote(note);
+            saveNote(note, { doNotRemove: true });
             editNote(note);
         }
     } else if (e.key === 'ArrowLeft' && e.ctrlKey) {
@@ -474,7 +485,7 @@ function handleInput(e) {
         const offset = e.shiftKey ? -5 * snapGridSize : -1 * snapGridSize;
         note.style.left = `${parseInt(note.style.left) + offset}px`
         if (note.getAttribute('data-id')) {
-            saveNote(note);
+            saveNote(note, { doNotRemove: true });
             editNote(note);
         }
     } else if (e.key === 'ArrowRight' && e.ctrlKey) {

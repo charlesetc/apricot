@@ -196,19 +196,14 @@ function editNote(noteOrEvent) {
         return;
     }
 
-    const text = pre.textContent;
+    const text = pre ? pre.textContent : '';
 
-    const input = document.createElement(text.includes('\n') ? 'textarea' : 'input');
+    const input = document.createElement('input');
     input.className = 'note-input';
     input.value = text;
     
-    if (input.tagName === 'TEXTAREA') {
-        input.style.height = 'auto';
-        input.style.height = input.scrollHeight + 'px';
-    } else {
-        input.type = 'text';
-        input.style.width = `${Math.max(text.length, 2)}ch`;
-    }
+    input.type = 'text';
+    input.style.width = `${Math.max(text.length, 2)}ch`;
     
     input.addEventListener('keydown', handleInput);
     input.addEventListener('input', resizeInput);

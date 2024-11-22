@@ -22,13 +22,6 @@ function updateSelectionBox(x, y) {
     selectionBox.style.top = `${top}px`;
 }
 
-function clearSelectionBox() {
-    if (selectionBox) {
-        selectionBox.remove();
-        selectionBox = null;
-    }
-}
-
 function highlightSelection() {    
     const selectionRect = selectionBox.getBoundingClientRect();
     const notes = document.querySelectorAll('.note');
