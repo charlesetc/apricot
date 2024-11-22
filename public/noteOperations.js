@@ -171,7 +171,6 @@ function saveNote(note, { doNotRemove } = {}) {
 }
 
 function editNote(noteOrEvent) {
-    console.log("Editing note " + noteOrEvent);
     let note;
     if (noteOrEvent instanceof Event) {
         var target = noteOrEvent.target;
@@ -187,13 +186,13 @@ function editNote(noteOrEvent) {
     }
 
     if (!note) {
-        console.error('No note found to edit');
+        console.warn('No note found to edit');
         return;
     }
 
     const pre = note.querySelector('pre');
     if (!pre) {
-        console.error('No pre element found in the note');
+        console.warn('No pre element found in the note');
         return;
     }
 

@@ -3,6 +3,7 @@
 function startDragging(e) {
     isDragging = true;
     currentNote = e.target.closest('.note');
+    if (currentNote === null) return;
     
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
@@ -23,6 +24,7 @@ function startDragging(e) {
 
 function dragSelectedNotes(e) {
     if (!isDragging) return;
+    if (currentNote === null) return;
     
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
