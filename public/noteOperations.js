@@ -61,6 +61,9 @@ function initializeNoteContents(note, text) {
     || text.startsWith('- ') || text == '-') {
         note.classList.add('list');
         note.bulletStr = text.charAt(0);
+    } else if (text.match(numberRegex_Begin)) {
+        note.classList.add('list');
+        note.bulletStr = text.match(numberRegex_Begin)[0];
     } else {
         note.bulletStr = '';
         note.classList.remove('list');
@@ -133,6 +136,9 @@ function createNote(x, y, text = null) {
 
 window.createNote = createNote;
 
+const numberRegex_BeginEnd = /^\d+\.\s*$/;
+const numberRegex_Begin = /^\d+\.\s+/;
+
 function isMeaninglessContent(text) {
     text = text.trim()
     return (
@@ -140,6 +146,7 @@ function isMeaninglessContent(text) {
         || (text.length == 1 && [ '*', '-', '•', ].includes(text))
         || (text.length == 2 && [ '[]' ].includes(text))
         || (text.length == 3 && [ '[x]' ].includes(text))
+        || (text.match(numberRegex_BeginEnd) !== null)
     )
 }
 

@@ -157,7 +157,7 @@ function handleCanvasMouseUp(e) {
                 const listNoteRect = listNoteAbove.getBoundingClientRect();
                 let newListNoteX = listNoteRect.left + scrollLeft;
                 let newListNoteY = listNoteRect.top + scrollTop + snapGridSize * 2;
-                createNote(newListNoteX, newListNoteY, `${listNoteAbove.bulletStr} `);
+                createNote(newListNoteX, newListNoteY, nextBulletStr(listNoteAbove.bulletStr));
             } else {            
                 let newNoteX = evenNumber(e.clientX + scrollLeft, snapGridSize);
                 let newNoteY = evenNumber(e.clientY + scrollTop, snapGridSize);
@@ -402,6 +402,14 @@ function moveSelection(direction) {
     }
 }
 
+function nextBulletStr(bulletStr) {
+    if (bulletStr.match(numberRegex_Begin)) {
+        const number = parseInt(bulletStr.match(numberRegex_Begin)[0]);
+        return `${number + 1}. `;
+    } else {
+        return bulletStr + ' ';
+    }
+}
 
 function handleInput(e) {
     if (e.key === 'Enter' && !(e.ctrlKey || e.metaKey)) {
@@ -426,7 +434,7 @@ function handleInput(e) {
         }
 
         if (note.classList.contains('list')) {
-            createNote(newNoteX, newNoteY, note.bulletStr + ' ');
+            createNote(newNoteX, newNoteY, nextBulletStr(note.bulletStr));
         } else {
             createNote(newNoteX, newNoteY);
         }
@@ -450,7 +458,7 @@ function handleInput(e) {
             note.style.left = `${parseInt(note.style.left) + offset}px`
             
             const input = e.target;
-            const regex = /^(•|-|\[x?\])\s*/;
+            const regex = /^(•|-|\[x?\]|\d+\.)\s*/;
             if (input.value.match(regex) && !e.shiftKey) {
                 input.value = input.value.replace(regex, '');
                 note.classList.remove('list');
