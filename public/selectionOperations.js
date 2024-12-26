@@ -11,10 +11,10 @@ function createSelectionBox(x, y) {
 
 function updateSelectionBox(x, y) {
     if (!selectionBox) return;
-    const width = Math.abs(x - selectionStart.x);
-    const height = Math.abs(y - selectionStart.y);
-    const left = Math.min(x, selectionStart.x);
-    const top = Math.min(y, selectionStart.y);
+    const width = Math.abs(x - mouseDownPos.x);
+    const height = Math.abs(y - mouseDownPos.y);
+    const left = Math.min(x, mouseDownPos.x);
+    const top = Math.min(y, mouseDownPos.y);
     
     selectionBox.style.width = `${width}px`;
     selectionBox.style.height = `${height}px`;

@@ -1,6 +1,6 @@
 // Global variables
 var canvas, isDragging, isSelecting, currentNote, offsetX, offsetY, canvasId;
-var selectedNotes, dragStartTime, selectionBox, selectionStart, mouseDownPos;
+var selectedNotes, dragStartTime, selectionBox, mouseDownPos;
 var CLICK_THRESHOLD = 5; // pixels
 let isMultiSelect = false;
 
@@ -37,7 +37,6 @@ function initializeApp() {
   isSelecting = false;
   currentNote = null;
   selectedNotes = new Set();
-  selectionStart = { x: 0, y: 0 };
   mouseDownPos = { x: 0, y: 0 };
 
   const urlParams = new URLSearchParams(window.location.search);

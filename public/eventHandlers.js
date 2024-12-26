@@ -46,7 +46,11 @@ function handleCanvasMouseDown(e) {
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
+    
+    mouseDownPos = { 
+        x: e.clientX + scrollLeft, 
+        y: e.clientY + scrollTop 
+    };
 
     if (e.button === 1) {
         e.preventDefault(); // Prevent context menu
@@ -55,14 +59,6 @@ function handleCanvasMouseDown(e) {
     }
     
     if (e.target === canvas) {
-        mouseDownPos = { 
-            x: e.clientX + scrollLeft, 
-            y: e.clientY + scrollTop 
-        };
-        selectionStart = { 
-            x: e.clientX + scrollLeft, 
-            y: e.clientY + scrollTop 
-        };
         clearSelectionBox();
         if (!e.ctrlKey && !e.shiftKey) {
             clearSelection();
