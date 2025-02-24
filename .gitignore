@@ -1,6 +1,7 @@
 *.db
 .DS_Store
 node_modules
+.envrc
 public/.DS_Store
 public/uploads
 !public/uploads/note.txt
