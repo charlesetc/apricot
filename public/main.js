@@ -45,6 +45,12 @@ function initializeApp() {
   if (!canvasId) {
     window.location.href = "/index.html";
   }
+  
+  // Set up the export button link
+  const exportButton = document.getElementById("export-button");
+  if (exportButton) {
+    exportButton.href = `/export.html?id=${canvasId}`;
+  }
 
   canvas.addEventListener("mousedown", handleCanvasMouseDown);
   canvas.addEventListener("mousemove", handleCanvasMouseMove);
