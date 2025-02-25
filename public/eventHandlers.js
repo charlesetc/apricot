@@ -247,6 +247,16 @@ function searchCanvases() {
 }
 
 function handleKeyDown(e) {
+    // Check if the title input is focused
+    const isTitleEditing = document.activeElement && 
+                          document.activeElement.classList && 
+                          document.activeElement.classList.contains('title-edit-input');
+                          
+    if (isTitleEditing) {
+        // Don't intercept keydown events when editing the title
+        return;
+    }
+    
     if (e.key === 'Tab' && !currentlyEditing) {
         if (selectedNotes.size === 0) {
             e.preventDefault();

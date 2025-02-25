@@ -242,7 +242,7 @@ app.get('/export.html', (req, res) => {
                         border-bottom: 1px solid #eee;
                         padding-bottom: 10px;
                         margin-bottom: 20px;
-                        font-size: 1.2em;
+                        font-size: 1.1em;
                     }
                     
                     /* Note styles - matching the canvas version */
