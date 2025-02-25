@@ -187,10 +187,10 @@ async function shareCanvas() {
     showToast('Generating share link...');
     
     try {
-      // Get the export HTML content - we'll share this exact content
-      const exportUrl = `/export.html?id=${canvasId}`;
-      const exportResponse = await fetch(exportUrl);
-      const htmlContent = await exportResponse.text();
+      // Get the read-only canvas HTML content with embedded CSS
+      const readonlyUrl = `/api/readonly-canvas/${canvasId}`;
+      const readonlyResponse = await fetch(readonlyUrl);
+      const htmlContent = await readonlyResponse.text();
       
       // Send the HTML content to the server for uploading to Cloudflare
       const response = await fetch('/api/share', {

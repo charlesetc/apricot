@@ -460,6 +460,272 @@ app.get('/export.html', (req, res) => {
     });
 });
 
+// Endpoint to get a read-only snapshot of a canvas with embedded CSS
+app.get('/api/readonly-canvas/:id', async (req, res) => {
+    const canvasId = req.params.id;
+    
+    if (!canvasId) {
+        return res.status(400).send('Canvas ID is required.');
+    }
+
+    try {
+        // First, get the canvas name
+        const canvas = await new Promise((resolve, reject) => {
+            db.get('SELECT * FROM canvases WHERE id = ?', [canvasId], (err, row) => {
+                if (err) reject(err);
+                if (!row) reject(new Error('Canvas not found'));
+                resolve(row);
+            });
+        });
+        
+        // Then, get all the notes for this canvas
+        const notes = await new Promise((resolve, reject) => {
+            db.all('SELECT * FROM notes WHERE canvas_id = ?', [canvasId], (err, rows) => {
+                if (err) reject(err);
+                resolve(rows);
+            });
+        });
+        
+        // Get CSS content
+        const cssPath = path.join(__dirname, 'public', 'styles.css');
+        const cssContent = fs.readFileSync(cssPath, 'utf8');
+        
+        // Generate the HTML
+        let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${canvas.name} - Apricot</title>
+    <style>
+    /* Base embedded styles */
+    ${cssContent}
+    
+    /* Read-only mode overrides */
+    body {
+        min-width: auto;
+        min-height: auto;
+        overflow: auto;
+    }
+    
+    html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .canvas-page {
+        min-width: auto;
+        min-height: auto;
+        position: relative;
+    }
+    
+    #canvas {
+        position: relative;
+        width: 5000px;
+        height: 5000px;
+        overflow: visible;
+    }
+    
+    /* Create a container that allows scrolling */
+    body {
+        cursor: default;
+    }
+    
+    /* For middle-button drag scrolling */
+    body.right-click-dragging {
+        cursor: grabbing !important;
+    }
+    
+    .note {
+        position: absolute;
+        cursor: default;
+        user-select: text;
+        -webkit-user-select: text;
+        -ms-user-select: text;
+        box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Style the header elements */
+    .back-button {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        padding: 5px 10px;
+        background-color: var(--button-bg-color);
+        text-decoration: none;
+        color: var(--text-color);
+        border-radius: 3px;
+        z-index: 100;
+    }
+    
+    .canvas-title {
+        position: fixed;
+        top: 10px;
+        left: 80px;
+        border-radius: 3px;
+        margin: 5px 7px;
+        padding: 0px 3px;
+        background: var(--bg-color);
+        font-size: 14px;
+    }
+    
+    .export-button {
+        display: none;
+    }
+    
+    /* Add footer */
+    .footer {
+        text-align: center;
+        padding: 20px;
+        margin-top: 40px;
+        color: var(--text-color);
+        opacity: 0.7;
+        font-size: 12px;
+    }
+    </style>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+</head>
+<body class="canvas-page">
+    <a href="https://github.com/charlesetc/apricot" class="back-button" target="_blank">Apricot</a>
+    <div class="canvas-title">${canvas.name}</div>
+    <div id="canvas">`;
+        
+        // Add each note
+        notes.forEach(note => {
+            // Process note content
+            let noteContent = note.text || '';
+            let noteClass = 'note';
+            
+            // Parse markdown-like content for special note types
+            if (noteContent.startsWith('#')) {
+                noteClass += ' header';
+            }
+            
+            // Handle bullet lists
+            if (noteContent.startsWith('• ') || noteContent === '•') {
+                noteClass += ' list bullet';
+            } 
+            // Handle dash lists
+            else if (noteContent.startsWith('- ') || noteContent === '-') {
+                noteClass += ' list dash';
+            }
+            // Handle numbered lists
+            else if (noteContent.match(/^\d+\.\s+/)) {
+                noteClass += ' list numbered';
+            }
+            // Handle checkboxes
+            else if (noteContent.match(/^\[[xX ]?\]/)) {
+                const isChecked = noteContent.match(/^\[[xX]\]/) !== null;
+                noteClass += ' checkbox list';
+                if (isChecked) {
+                    noteClass += ' checked';
+                }
+                noteContent = noteContent.replace(/^\[[xX ]?\]\s*/, '');
+                noteContent = `<input type="checkbox" ${isChecked ? 'checked' : ''} disabled>${noteContent}`;
+            }
+            // Handle images
+            else if (noteContent.match(/!\[.*?\]\((.*?)\)/)) {
+                const match = noteContent.match(/!\[.*?\]\((.*?)\)/);
+                if (match && match[1]) {
+                    let imgSrc = match[1];
+                    if (!imgSrc.startsWith('http') && !imgSrc.startsWith('/')) {
+                        imgSrc = '/' + imgSrc;
+                    }
+                    noteContent = `<img src="${imgSrc}" alt="Note Image">`;
+                    noteClass += ' image';
+                }
+            }
+            // Handle links
+            else if (noteContent.match(/\[(.*?)\]\((.*?)\)/) && !noteContent.match(/!\[.*?\]\((.*?)\)/)) {
+                const match = noteContent.match(/\[(.*?)\]\((.*?)\)/);
+                if (match && match[1] && match[2]) {
+                    noteContent = `<a href="${match[2]}" target="_blank">${match[1]}</a>`;
+                    noteClass += ' link';
+                }
+            }
+            // Handle strikethrough
+            else if (noteContent.match(/^~.*?~$/)) {
+                const match = noteContent.match(/^~(.*?)~$/);
+                if (match && match[1]) {
+                    noteContent = match[1];
+                    noteClass += ' strikethrough';
+                }
+            }
+            
+            // Add the note to HTML with positioning
+            html += `
+        <div class="${noteClass}" style="left: ${note.x}px; top: ${note.y}px;">
+            <pre>${noteContent}</pre>
+        </div>`;
+        });
+        
+        // Close the HTML
+        html += `
+    </div>
+    <div class="footer">
+        Shared from Apricot - <a href="${req.protocol}://${req.get('host')}">View more spaces</a>
+    </div>
+    
+    <script>
+    // Middle-button drag navigation
+    (function() {
+        let isCanvasDragging = false;
+        let lastMouseX, lastMouseY;
+        const SCROLL_MULTIPLIER = 1.5;
+        
+        function startCanvasDragging(e) {
+            document.body.classList.add('right-click-dragging');
+            isCanvasDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        }
+        
+        function stopCanvasDragging() {
+            document.body.classList.remove('right-click-dragging');
+            isCanvasDragging = false;
+        }
+        
+        document.addEventListener('mousedown', function(e) {
+            if (e.button === 1) { // Middle button
+                e.preventDefault();
+                startCanvasDragging(e);
+            }
+        });
+        
+        document.addEventListener('mousemove', function(e) {
+            if (isCanvasDragging) {
+                const dx = e.clientX - lastMouseX;
+                const dy = e.clientY - lastMouseY;
+                window.scrollBy(-dx * SCROLL_MULTIPLIER, -dy * SCROLL_MULTIPLIER);
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+            }
+        });
+        
+        document.addEventListener('mouseup', function(e) {
+            if (e.button === 1) {
+                stopCanvasDragging();
+            }
+        });
+        
+        document.addEventListener('mouseleave', stopCanvasDragging);
+        window.addEventListener('blur', stopCanvasDragging);
+    })();
+    </script>
+</body>
+</html>`;
+        
+        res.send(html);
+    } catch (error) {
+        console.error('Error generating read-only canvas:', error);
+        res.status(500).send('Error generating canvas: ' + error.message);
+    }
+});
+
 // Endpoint for sharing a canvas to Cloudflare
 app.post('/api/share', async (req, res) => {
     try {
