@@ -242,6 +242,7 @@ app.get('/export.html', (req, res) => {
                         border-bottom: 1px solid #eee;
                         padding-bottom: 10px;
                         margin-bottom: 20px;
+                        font-size: 1.2em;
                     }
                     
                     /* Note styles - matching the canvas version */
@@ -266,12 +267,14 @@ app.get('/export.html', (req, res) => {
                         display: flex;
                         align-items: flex-start;
                         padding-left: 24px;
+                        padding-right: 8px;
                     }
                     
                     .note.checkbox input[type="checkbox"] {
                         position: absolute;
                         left: 4px;
                         top: 4px;
+                        margin-right: 8px;
                     }
                     
                     .note.checkbox.checked {
@@ -346,6 +349,20 @@ app.get('/export.html', (req, res) => {
                             border-bottom-color: #333;
                         }
                     }
+                    
+                    /* Print styles - force background colors when printing */
+                    @media print {
+                        .note {
+                            background-color: #f0f0f0 !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                            color-adjust: exact;
+                            border: 1px solid #d0d0d0;
+                        }
+                        @page {
+                            margin: 1cm;
+                        }
+                    }
                 </style></head><body><h1>${canvas.name}</h1><div class="notes-container">`;
             
             notes.forEach(note => {
@@ -388,7 +405,7 @@ app.get('/export.html', (req, res) => {
                     const checkboxHtml = `<input type="checkbox" ${isChecked ? 'checked' : ''} disabled>`;
                     noteContent = note.text.replace(/^\[[xX ]?\]\s*/, '');
                     
-                    html += `<div class="${className}">${checkboxHtml}${noteContent}</div>`;
+                    html += `<div class="${className}">${checkboxHtml}<span style="margin-left: 8px;">${noteContent}</span></div>`;
                     return; // Skip the default note creation at the end
                 }
                 // Handle images
