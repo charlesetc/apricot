@@ -92,10 +92,19 @@ function showSettingsPopup() {
     window.open(`/export.html?id=${canvasId}`, '_blank');
   });
   
-  // Add other settings buttons as needed
+  // Add share button
+  const shareBtn = document.createElement('button');
+  shareBtn.textContent = 'Share';
+  shareBtn.className = 'popup-button';
+  shareBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    hideSettingsPopup(); // Hide popup when sharing
+    shareCanvas();
+  });
   
   // Add buttons to popup
   popup.appendChild(exportBtn);
+  popup.appendChild(shareBtn);
   
   // Add popup to document
   document.body.appendChild(popup);
@@ -138,6 +147,97 @@ function saveCanvasTitle() {
   } else {
     // Revert to original name if empty
     titleElement.textContent = inputElement.defaultValue;
+  }
+}
+
+function showToast(message, duration = 3000) {
+  // Remove any existing toast
+  const existingToast = document.querySelector('.toast');
+  if (existingToast) {
+    existingToast.remove();
+  }
+  
+  // Create new toast
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  // Show the toast
+  setTimeout(() => {
+    toast.style.opacity = '1';
+  }, 10);
+  
+  // Hide and remove after duration
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
+  }, duration);
+}
+
+async function shareCanvas() {
+  try {
+    // First get the canvas name
+    const canvasResponse = await fetch(`/api/canvases/${canvasId}`);
+    const canvasData = await canvasResponse.json();
+    
+    // Show loading toast
+    showToast('Generating share link...');
+    
+    try {
+      // Get the export HTML content - we'll share this exact content
+      const exportUrl = `/export.html?id=${canvasId}`;
+      const exportResponse = await fetch(exportUrl);
+      const htmlContent = await exportResponse.text();
+      
+      // Send the HTML content to the server for uploading to Cloudflare
+      const response = await fetch('/api/share', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          canvasId: canvasId,
+          name: canvasData.name,
+          htmlContent: htmlContent
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to share canvas');
+      }
+      
+      const result = await response.json();
+      
+      // Copy the URL to clipboard
+      const textArea = document.createElement('textarea');
+      textArea.value = result.shareUrl;
+      textArea.style.position = 'fixed';  // Avoid scrolling to bottom
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      if (successful) {
+        // Show success toast
+        showToast('Share link copied to clipboard!');
+      } else {
+        // Show URL toast if copy fails
+        showToast('Share link created: ' + result.shareUrl);
+      }
+      
+    } catch (error) {
+      showToast('Error sharing canvas: ' + error.message, 5000);
+      console.error('Error sharing canvas:', error);
+    }
+  } catch (error) {
+    console.error('Error sharing canvas:', error);
+    showToast('Failed to share canvas: ' + error.message, 5000);
   }
 }
 

@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fetch = require('node-fetch');
 
 const multer = require('multer');
 const fs = require('fs');
@@ -457,6 +458,69 @@ app.get('/export.html', (req, res) => {
             res.send(html);
         });
     });
+});
+
+// Endpoint for sharing a canvas to Cloudflare
+app.post('/api/share', async (req, res) => {
+    try {
+        const { canvasId, name, htmlContent } = req.body;
+        
+        // Generate a unique identifier for the shared canvas
+        const shareId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        
+        // Cloudflare account details
+        const apiToken = '2muDSzmTu7BttzTwwEDSjBrx5oarkV8tgloFEdyU'; // Your provided token
+        
+        // In production, use environment variables instead:
+        // const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+        // const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+        // const namespaceId = process.env.CLOUDFLARE_KV_NAMESPACE_ID;
+        
+        // Actual Cloudflare account details
+        const accountId = '771075126a31746d5e4a9b10b7357afd'; // Your actual account ID
+        const namespaceId = '5c8bdbe765f748c094289bc7e5cb074c'; // Your actual namespace ID
+        
+        // Upload the HTML content to Cloudflare KV
+        const kvUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${shareId}`;
+        
+        console.log(`Uploading to Cloudflare KV: ${kvUrl}`);
+        
+        const uploadResponse = await fetch(kvUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${apiToken}`,
+                'Content-Type': 'text/html'
+            },
+            body: htmlContent
+        });
+        
+        const uploadResult = await uploadResponse.json();
+        
+        if (!uploadResult.success) {
+            console.error('Cloudflare upload error:', uploadResult);
+            throw new Error('Failed to upload content to Cloudflare: ' + JSON.stringify(uploadResult.errors));
+        }
+        
+        // Your worker's domain
+        const workerDomain = 'apricot-share.inclouds.workers.dev'; // Your actual worker domain
+        const shareUrl = `https://${workerDomain}/${shareId}`;
+        
+        console.log(`Canvas ${canvasId} (${name}) shared with ID: ${shareId}`);
+        console.log(`Share URL: ${shareUrl}`);
+        
+        // Return the share URL
+        res.json({
+            success: true,
+            shareId: shareId,
+            shareUrl: shareUrl
+        });
+    } catch (error) {
+        console.error('Error sharing canvas:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 });
 
 app.get('*', (req, res) => {
