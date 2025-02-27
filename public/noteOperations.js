@@ -337,6 +337,7 @@ function maybeCreateStrikethrough(note, text, pre) {
 
 
 function copySelectedNotes() {
+    // Copy HTML for pasting notes back into the canvas
     const notesHtml = Array.from(selectedNotes)
         .map(note => {
             const clonedNote = note.cloneNode(true);
@@ -345,8 +346,31 @@ function copySelectedNotes() {
             return clonedNote.outerHTML.replace(/\sdata-id="[^"]*"/, '');
         })
         .join('');
-    const blob = new Blob([notesHtml], {type: 'text/html'});
-    const item = new ClipboardItem({'text/html': blob});
+        
+    // Extract plain text from selected notes and join with newlines for text clipboard
+    const plainText = Array.from(selectedNotes)
+        .map(note => {
+            // Get the textContent - either from pre element or from input if being edited
+            if (note.querySelector('.note-input')) {
+                return note.querySelector('.note-input').value;
+            } else if (note.querySelector('pre')) {
+                return note.querySelector('pre').textContent;
+            } else {
+                return note.textContent;
+            }
+        })
+        .join('\n');
+        
+    // Create clipboard items for both formats
+    const htmlBlob = new Blob([notesHtml], {type: 'text/html'});
+    const textBlob = new Blob([plainText], {type: 'text/plain'});
+    
+    // Write both formats to clipboard
+    const item = new ClipboardItem({
+        'text/html': htmlBlob,
+        'text/plain': textBlob
+    });
+    
     navigator.clipboard.write([item]);
 }
 

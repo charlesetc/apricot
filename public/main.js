@@ -26,6 +26,9 @@ function loadTitle() {
         if (titleElement) {
           titleElement.textContent = project.name;
           
+          // Set document title to be the canvas name
+          document.title = project.name;
+          
           // Add click handler to make title editable
           titleElement.addEventListener('click', editCanvasTitle);
         }
@@ -139,6 +142,8 @@ function saveCanvasTitle() {
     .then(response => response.json())
     .then(data => {
       titleElement.textContent = newName;
+      // Update document title to match new canvas name
+      document.title = newName;
     })
     .catch(error => {
       console.error('Error updating canvas title:', error);
