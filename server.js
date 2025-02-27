@@ -577,6 +577,7 @@ app.get('/api/readonly-canvas/:id', async (req, res) => {
         padding: 0px 3px;
         background: var(--bg-color);
         font-size: 14px;
+        z-index: 100;
     }
     
     .export-button {
