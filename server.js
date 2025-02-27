@@ -553,11 +553,19 @@ app.get('/api/readonly-canvas/:id', async (req, res) => {
         top: 10px;
         left: 10px;
         padding: 5px 10px;
-        background-color: var(--button-bg-color);
+        background-color:rgb(255, 235, 192);
         text-decoration: none;
-        color: var(--text-color);
+        color: #000;
         border-radius: 3px;
         z-index: 100;
+    }
+    
+    /* Dark mode support for back button */
+    @media (prefers-color-scheme: dark) {
+        .back-button {
+            background-color: :rgb(255, 235, 192);
+            color: #000; /* Black text on apricot background for better contrast */
+        }
     }
     
     .canvas-title {
@@ -666,10 +674,7 @@ app.get('/api/readonly-canvas/:id', async (req, res) => {
         // Close the HTML
         html += `
     </div>
-    <div class="footer">
-        Shared from Apricot - <a href="${req.protocol}://${req.get('host')}">View more spaces</a>
-    </div>
-    
+
     <script>
     // Middle-button drag navigation
     (function() {
