@@ -1,3 +1,11 @@
+/* Font face declaration */
+@font-face {
+  font-family: 'Iosevka Medium';
+  src: url('fonts/Iosevka-Medium.ttc') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* Light mode styles */
 :root {
   --bg-color: #ffffff;
@@ -45,8 +53,8 @@ html {
   padding: 0;
   height: 100%;
   font-size: 14px;
-  font-family: 'Iosevka Medium', 'Iosevka', 'Courier New', Courier, monospace;
-    font-weight: medium;
+  font-family: 'Iosevka',  'Iosevka Medium', 'Courier New', Courier, monospace;
+  font-weight: 400;
   background-color: var(--bg-color);
   color: var(--text-color);
 }
@@ -177,6 +185,7 @@ body.right-click-dragging .note {
   text-decoration: none;
   color: var(--text-color);
   border-radius: 3px;
+  font-weight: 600;
 }
 
 .export-button {
@@ -208,6 +217,7 @@ body.right-click-dragging .note {
   cursor: pointer;
   font-weight: 500;
   min-width: 50px;
+  font-weight: 500;
 }
 
 #canvas-title:hover {

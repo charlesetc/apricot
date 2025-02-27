@@ -6,3 +6,6 @@ public/.DS_Store
 public/uploads
 !public/uploads/note.txtpublic/fonts
 public/fonts/
+!public/uploads/note.txt
+
+public/fonts

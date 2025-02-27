@@ -623,22 +623,144 @@ async function handleHtmlPaste(e, clipboardItem) {
     updateCanvasSize();
 }
 
+async function handleMultilineTextPaste(text) {
+    // Split text into lines and handle both \n and \r\n line endings
+    const lines = text.split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line.length > 0); // Skip empty lines
+    
+    if (lines.length <= 1) return false; // Not multiline text
+    
+    // Get scroll offsets
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    let x, y;
+    
+    if (currentlyEditing) {
+        // If we're editing a note, replace it with the first line
+        // and add the rest below it
+        const note = currentlyEditing;
+        x = parseInt(note.style.left);
+        y = parseInt(note.style.top);
+        
+        // Replace current note's content with the first line
+        const input = note.querySelector('.note-input');
+        if (input) {
+            input.value = lines[0];
+            saveNote(note);
+        }
+        
+        // Start creating new notes below the current one
+        for (let i = 1; i < lines.length; i++) {
+            y += snapGridSize * 2; // Move down for each new note
+            const newNote = createNoteElement(
+                Date.now().toString() + '-' + i,
+                x,
+                y,
+                lines[i]
+            );
+            sendToBackend(newNote);
+        }
+        
+        currentlyEditing = null;
+    } else {
+        // If not editing, create all lines as new notes at cursor position
+        x = evenNumber(clientX + scrollLeft, snapGridSize);
+        y = evenNumber(clientY + scrollTop, snapGridSize);
+        
+        lines.forEach((line, index) => {
+            const yPos = y + (index * snapGridSize * 2);
+            const newNote = createNoteElement(
+                Date.now().toString() + '-' + index,
+                x,
+                yPos,
+                line
+            );
+            sendToBackend(newNote);
+        });
+    }
+    
+    updateCanvasSize();
+    return true; // Successfully handled multiline paste
+}
+
+async function handleSingleLineTextPaste(text, e) {
+    // If editing a note, allow default behavior for single line paste
+    if (currentlyEditing) {
+        // Let the default paste action happen in the input field
+        return false;
+    }
+    
+    // If not editing, create a new note at cursor position
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    const x = evenNumber(clientX + scrollLeft, snapGridSize);
+    const y = evenNumber(clientY + scrollTop, snapGridSize);
+    
+    const newNote = createNoteElement(
+        Date.now().toString(),
+        x,
+        y,
+        text
+    );
+    sendToBackend(newNote);
+    updateCanvasSize();
+    
+    return true;
+}
+
 async function handlePaste(e) {
+    // If paste is directly in an input field, don't interfere with default behavior
+    if (e.target.tagName === 'INPUT' && e.target.classList.contains('note-input')) {
+        // Allow default paste behavior in inputs, but check for multiline paste
+        try {
+            const clipText = await navigator.clipboard.readText();
+            if (clipText.match(/\r?\n/)) {
+                e.preventDefault(); // Prevent default paste for multiline text
+                await handleMultilineTextPaste(clipText);
+                return;
+            }
+        } catch (err) {
+            console.log("Couldn't read text from clipboard:", err);
+        }
+        return; // Allow default paste for single-line text in inputs
+    }
+    
+    // For pastes outside of input fields
     const clipboardItems = await navigator.clipboard.read();
     
     for (const clipboardItem of clipboardItems) {
-
+        // First check for HTML paste
         if (clipboardItem.types.includes('text/html')) {
             await handleHtmlPaste(e, clipboardItem);
             return;
         }
-
-        for (const type of clipboardItem.types) {
-            if (type.startsWith('image/')) {
-                await handleImagePaste(e, clipboardItem, type);
+        
+        // Then check for plain text, which might be multiline
+        if (clipboardItem.types.includes('text/plain')) {
+            const blob = await clipboardItem.getType('text/plain');
+            const text = await blob.text();
+            
+            // Handle multi-line text as a special case
+            if (await handleMultilineTextPaste(text)) {
+                return;
+            }
+            
+            // Handle single line text
+            if (await handleSingleLineTextPaste(text, e)) {
+                return;
             }
         }
 
+        // Handle image paste
+        for (const type of clipboardItem.types) {
+            if (type.startsWith('image/')) {
+                await handleImagePaste(e, clipboardItem, type);
+                return;
+            }
+        }
     }
 }
 
