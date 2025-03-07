@@ -304,8 +304,28 @@ async function duplicateCanvas() {
     const canvasResponse = await fetch(`/api/canvases/${canvasId}`);
     const canvasData = await canvasResponse.json();
     
-    // Create a new canvas with a name indicating it's a copy
-    const newName = `${canvasData.name} copy`;
+    // Check if name starts with a date in format yyyy-mm-dd
+    let newName = canvasData.name;
+    const dateRegex = /^(\d{4}-\d{2}-\d{2})\s+(.+)$/;
+    const dateMatch = canvasData.name.match(dateRegex);
+    
+    if (dateMatch) {
+      // Get current date in yyyy-mm-dd format
+      const today = new Date();
+      const currentDate = today.toISOString().split('T')[0]; // Format: yyyy-mm-dd
+      
+      // If current date is different from the prefix date, update it
+      if (currentDate !== dateMatch[1]) {
+        newName = `${currentDate} ${dateMatch[2]}`;
+      } else {
+        // Date is the same, add " copy"
+        newName = `${canvasData.name} copy`;
+      }
+    } else {
+      // No date prefix, add " copy"
+      newName = `${canvasData.name} copy`;
+    }
+    
     const createResponse = await fetch('/api/canvases', {
       method: 'POST',
       headers: {
