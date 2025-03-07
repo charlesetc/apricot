@@ -4,4 +4,5 @@ node_modules
 .envrc
 public/.DS_Store
 public/uploads
-!public/uploads/note.txt
+!public/uploads/note.txtpublic/fonts
+public/fonts/

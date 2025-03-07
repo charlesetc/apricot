@@ -53,9 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ name })
             })
             .then(response => response.json())
-            .then(() => {
-                newProjectInput.value = '';
-                loadProjects();
+            .then((data) => {
+                window.location.href = `/canvas.html?id=${data.id}`;
             })
             .catch(error => console.error('Error creating project:', error));
         }
