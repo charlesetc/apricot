@@ -105,9 +105,20 @@ function showSettingsPopup() {
     shareCanvas();
   });
   
+  // Add duplicate button
+  const duplicateBtn = document.createElement('button');
+  duplicateBtn.textContent = 'Duplicate';
+  duplicateBtn.className = 'popup-button';
+  duplicateBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    hideSettingsPopup(); // Hide popup when duplicating
+    duplicateCanvas();
+  });
+  
   // Add buttons to popup
   popup.appendChild(exportBtn);
   popup.appendChild(shareBtn);
+  popup.appendChild(duplicateBtn);
   
   // Add popup to document
   document.body.appendChild(popup);
@@ -282,6 +293,60 @@ function initializeApp() {
 
   loadTitle();
   loadNotes();
+}
+
+async function duplicateCanvas() {
+  try {
+    // Show loading toast
+    showToast('Duplicating canvas...');
+    
+    // First get the current canvas details
+    const canvasResponse = await fetch(`/api/canvases/${canvasId}`);
+    const canvasData = await canvasResponse.json();
+    
+    // Create a new canvas with a name indicating it's a copy
+    const newName = `${canvasData.name} copy`;
+    const createResponse = await fetch('/api/canvases', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name: newName })
+    });
+    
+    const newCanvas = await createResponse.json();
+    const newCanvasId = newCanvas.id;
+    
+    // Get all notes from the current canvas
+    const notesResponse = await fetch(`/api/notes/${canvasId}`);
+    const notes = await notesResponse.json();
+    
+    // Create duplicates of all notes in the new canvas
+    for (const note of notes) {
+      const newNote = {
+        id: Date.now() + Math.random().toString(36).substring(2, 10), // Generate a unique ID
+        canvas_id: newCanvasId,
+        text: note.text,
+        x: note.x,
+        y: note.y
+      };
+      
+      await fetch('/api/notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newNote)
+      });
+    }
+    
+    // Navigate to the new canvas
+    window.location.href = `/canvas.html?id=${newCanvasId}`;
+    
+  } catch (error) {
+    console.error('Error duplicating canvas:', error);
+    showToast('Failed to duplicate canvas: ' + error.message, 5000);
+  }
 }
 
 // Make functions global
