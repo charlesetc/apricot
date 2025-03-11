@@ -713,19 +713,9 @@ async function handleSingleLineTextPaste(text, e) {
 
 async function handlePaste(e) {
     // If paste is directly in an input field, don't interfere with default behavior
+    // This case is now handled by the keyup event handler
     if (e.target.tagName === 'INPUT' && e.target.classList.contains('note-input')) {
-        // Allow default paste behavior in inputs, but check for multiline paste
-        try {
-            const clipText = await navigator.clipboard.readText();
-            if (clipText.match(/\r?\n/)) {
-                e.preventDefault(); // Prevent default paste for multiline text
-                await handleMultilineTextPaste(clipText);
-                return;
-            }
-        } catch (err) {
-            console.log("Couldn't read text from clipboard:", err);
-        }
-        return; // Allow default paste for single-line text in inputs
+        return;
     }
     
     // For pastes outside of input fields
