@@ -13,7 +13,35 @@ const app = express();
 const port = 3003;
 
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Add CORS headers for font files
+app.use('/fonts', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+});
+
+// Serve static files with custom MIME types for fonts
+app.use(express.static(path.join(__dirname, 'public'), {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.ttc') || filePath.endsWith('.ttf')) {
+            res.setHeader('Content-Type', 'font/sfnt');
+            // Additional security headers for fonts
+            res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        } else if (filePath.endsWith('.woff')) {
+            res.setHeader('Content-Type', 'font/woff');
+            res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        } else if (filePath.endsWith('.woff2')) {
+            res.setHeader('Content-Type', 'font/woff2');
+            res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        } else if (filePath.endsWith('.otf')) {
+            res.setHeader('Content-Type', 'font/otf');
+            res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        }
+    }
+}));
 
 const db = new sqlite3.Database('./notes.db', (err) => {
     if (err) {

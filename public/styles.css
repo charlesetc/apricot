@@ -1,9 +1,11 @@
 /* Font face declaration */
 @font-face {
   font-family: 'Iosevka Medium';
-  src: url('fonts/Iosevka-Medium.ttc') format('truetype');
+  src: url('/fonts/woff2/Iosevka-Medium.woff2') format('woff2'),
+       url('/fonts/Iosevka-Medium.ttc') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 /* Light mode styles */
@@ -53,7 +55,7 @@ html {
   padding: 0;
   height: 100%;
   font-size: 14px;
-  font-family: 'Iosevka',  'Iosevka Medium', 'Courier New', Courier, monospace;
+  font-family: 'Iosevka Medium', 'Iosevka', 'Courier New', Courier, monospace;
   font-weight: 400;
   background-color: var(--bg-color);
   color: var(--text-color);
