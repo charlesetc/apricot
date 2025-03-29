@@ -508,7 +508,7 @@ function handleInput(e) {
         const offset = e.shiftKey ? 5 * snapGridSize : snapGridSize;
         note.style.left = `${parseInt(note.style.left) + offset}px`
         if (note.getAttribute('data-id')) {
-            saveNote(note);
+            saveNote(note, { doNotRemove: true });
             editNote(note);
         }
     } else if (e.key === 'Backspace' && e.ctrlKey) {
