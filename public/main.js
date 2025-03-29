@@ -38,6 +38,12 @@ function loadTitle() {
 
 function editCanvasTitle(e) {
   const titleElement = document.getElementById('canvas-title');
+  
+  // If we're already editing, don't create another input
+  if (titleElement.querySelector('.title-edit-input')) {
+    return;
+  }
+  
   const currentName = titleElement.textContent;
   
   // Create input element
@@ -58,6 +64,11 @@ function editCanvasTitle(e) {
   inputElement.focus();
   inputElement.select();
   
+  // Prevent the click inside input from triggering title edit again
+  inputElement.addEventListener('mousedown', function(e) {
+    e.stopPropagation();
+  });
+  
   // Save changes on blur or Enter key
   inputElement.addEventListener('blur', function(e) {
     // Small delay to allow clicking on popup buttons
@@ -70,7 +81,9 @@ function editCanvasTitle(e) {
   inputElement.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
       e.preventDefault();
-      inputElement.blur();
+      // Save immediately on Enter key press, don't wait for blur timeout
+      saveCanvasTitle();
+      hideSettingsPopup();
     } else if (e.key === 'Escape') {
       titleElement.textContent = currentName;
       hideSettingsPopup();

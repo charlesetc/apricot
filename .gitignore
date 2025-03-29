@@ -9,3 +9,4 @@ public/fonts/
 !public/uploads/note.txt
 
 public/fonts
+.secrets.json

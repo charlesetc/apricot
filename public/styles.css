@@ -55,7 +55,7 @@ html {
   padding: 0;
   height: 100%;
   font-size: 14px;
-  font-family: 'Iosevka Medium', 'Iosevka', 'Courier New', Courier, monospace;
+  font-family:  'Iosevka Web', 'Iosevka', 'Iosevka Medium', 'Courier New', Courier, monospace;
   font-weight: 400;
   background-color: var(--bg-color);
   color: var(--text-color);

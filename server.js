@@ -528,6 +528,16 @@ app.get('/api/readonly-canvas/:id', async (req, res) => {
     <style>
     /* Base embedded styles */
     ${cssContent}
+
+
+    @font-face {
+        font-family: 'Iosevka Web';
+        font-display: swap;
+        font-weight: 500;
+        font-stretch: normal;
+        font-style: normal;
+        src: url('https://iosevka-webfonts.github.io/iosevka/woff2/iosevka-medium.woff2') format('woff2'), url('https://iosevka-webfonts.github.io/iosevka/ttf/iosevka-medium.ttf') format('truetype');
+    }
     
     /* Read-only mode overrides */
     body {
@@ -767,11 +777,27 @@ app.post('/api/share', async (req, res) => {
         
         // Generate a unique identifier for the shared canvas
         const shareId = Math.random().toString(36).substr(2, 25);
+
+
+        // Yeah this is hacky but it works for now. We could have a better 
+        // abstraction around secrets in the future, should we have more.
+        // Read Cloudflare credentials from .secrets.json
+        const secretsPath = path.join(__dirname, '.secrets.json');
+        let apiToken, accountId, namespaceId;
         
-        // Your Cloudflare account details
-        const apiToken = process.env.CLOUDFLARE_API_TOKEN;
-        const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-        const namespaceId = process.env.CLOUDFLARE_KV_NAMESPACE_ID;
+        try {
+            const secrets = JSON.parse(fs.readFileSync(secretsPath, 'utf8'));
+            apiToken = secrets.CLOUDFLARE_API_TOKEN;
+            accountId = secrets.CLOUDFLARE_ACCOUNT_ID;
+            namespaceId = secrets.CLOUDFLARE_KV_NAMESPACE_ID;
+            
+            if (!apiToken || !accountId || !namespaceId) {
+            throw new Error("Missing required Cloudflare credentials in .secrets.json");
+            }
+        } catch (error) {
+            console.error("Error loading Cloudflare credentials from .secrets.json:", error.message);
+            throw new Error("Failed to load Cloudflare credentials");
+        }
         
         // Upload the HTML content to Cloudflare KV
         const kvUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${shareId}`;
