@@ -158,8 +158,7 @@ function handleCommandClickInList(e) {
         
         // For other notes, must be part of the list - check if it's at a position that's a multiple of snapGridSize*2
         // from the clicked note's position
-        const yDiff = noteY - clickedY;
-        return yDiff % (snapGridSize * 2) === 0;
+        return true;
     });
     
     // Sort notes by Y position (top to bottom)

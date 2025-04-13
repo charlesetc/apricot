@@ -29,6 +29,20 @@ function findListNoteAbove(x, y) {
     return null;
 }
 
+function findListNoteBelow(x, y) {
+    const notes = Array.from(document.querySelectorAll('.note'));
+
+    const note = findNoteAtPosition(x, y + snapGridSize) || findNoteAtPosition(x, y + snapGridSize * 2);
+    if (note && note.classList.contains('list')) {
+        var rect = note.getBoundingClientRect();
+        if (Math.abs(rect.left - x) <= 160) {
+            return note;
+        } 
+    }
+
+    return null;
+}
+
 function stopCanvasDragging() {
     document.body.classList.remove('right-click-dragging');
     isCanvasDragging = false;
@@ -149,11 +163,18 @@ function handleCanvasMouseUp(e) {
 
         if (Math.sqrt(dx * dx + dy * dy) <= CLICK_THRESHOLD) {
             const listNoteAbove = findListNoteAbove(e.clientX, e.clientY);
+            const listNoteBelow = findListNoteBelow(e.clientX, e.clientY);
+            
             if (listNoteAbove) {
                 const listNoteRect = listNoteAbove.getBoundingClientRect();
                 let newListNoteX = listNoteRect.left + scrollLeft;
                 let newListNoteY = listNoteRect.top + scrollTop + snapGridSize * 2;
                 createNote(newListNoteX, newListNoteY, nextBulletStr(listNoteAbove.bulletStr));
+            } else if (listNoteBelow) {
+                const listNoteRect = listNoteBelow.getBoundingClientRect();
+                let newListNoteX = listNoteRect.left + scrollLeft;
+                let newListNoteY = listNoteRect.top + scrollTop - snapGridSize * 2;
+                createNote(newListNoteX, newListNoteY, nextBulletStr(listNoteBelow.bulletStr));
             } else {            
                 let newNoteX = evenNumber(e.clientX + scrollLeft, snapGridSize);
                 let newNoteY = evenNumber(e.clientY + scrollTop, snapGridSize);
