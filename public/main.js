@@ -10,6 +10,9 @@ const DRAG_THRESHOLD = 5; // pixels
 let clientX = 0;
 let clientY = 0;
 
+// Track notes moved by command-click and the new note created
+let lastCommandClickData = null;
+
 function isImageMarkdown(text) {
   const imageRegex = /!\[.*?\]\((.*?)\)/;
   return imageRegex.test(text);

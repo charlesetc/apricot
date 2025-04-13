@@ -67,6 +67,7 @@ function stopDragging() {
 window.startDragging = startDragging;
 window.dragSelectedNotes = dragSelectedNotes;
 window.stopDragging = stopDragging;
+window.snapGridSize = snapGridSize;
 function rectsIntersect(rect1, rect2) {
     return !(rect2.left > rect1.right || 
              rect2.right < rect1.left || 

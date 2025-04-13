@@ -313,6 +313,37 @@ function handleKeyDown(e) {
     } else if (e.key === "Escape") {
         if (currentlyEditing) {
             const note = currentlyEditing;
+            
+            // Check if this is a note created by command-click that is being edited
+            // and the user pressed Escape without entering any text
+            if (lastCommandClickData && 
+                lastCommandClickData.newNote === note && 
+                Date.now() - lastCommandClickData.timestamp < 30000) {
+                
+                // User wants to undo the command-click operation
+                
+                // Get the value of the input to check if it's empty
+                const input = note.querySelector('.note-input');
+                const isEmpty = input && (!input.value || input.value.trim() === '');
+                
+                if (isEmpty) {
+                    // Delete the newly created empty note
+                    deleteSingleNote(note);
+                    
+                    // Restore original positions of moved notes
+                    lastCommandClickData.originalPositions.forEach(item => {
+                        item.note.style.top = `${item.top}px`;
+                        sendToBackend(item.note);
+                    });
+                    
+                    updateCanvasSize();
+                    lastCommandClickData = null; // Clear the command-click data
+                    currentlyEditing = null;
+                    return;
+                }
+            }
+            
+            // Normal behavior for Escape during editing
             saveNote(note);
             clearSelection();
             selectNote(note);

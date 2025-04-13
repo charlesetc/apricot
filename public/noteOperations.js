@@ -116,8 +116,88 @@ function handleNoteMouseUp(e) {
 
     if (Math.sqrt(dx*dx + dy*dy) <= DRAG_THRESHOLD) {
         // This was a click, not a drag
-        editNote(e);
+        if (e.metaKey || e.ctrlKey) {
+            // Handle command/ctrl click to insert a new note in a list
+            handleCommandClickInList(e);
+        } else {
+            editNote(e);
+        }
     }
+}
+
+function handleCommandClickInList(e) {
+    const clickedNote = e.target.closest('.note');
+    if (!clickedNote) return;
+    
+    // Get the position of the clicked note
+    const clickedX = parseInt(clickedNote.style.left);
+    const clickedY = parseInt(clickedNote.style.top);
+    
+    // Define tolerance ranges (more tolerance to the right than left)
+    const leftTolerance = 2 * snapGridSize; 
+    const rightTolerance = 6 * snapGridSize;
+    
+    // Find all notes that are part of the same vertical list
+    // They can be slightly to the left or right of the clicked note
+    const allNotes = Array.from(document.querySelectorAll('.note'));
+    
+    // Include the clicked note itself and all notes below it in the list
+    const notesInList = allNotes.filter(note => {
+        const noteX = parseInt(note.style.left);
+        const noteY = parseInt(note.style.top);
+        
+        // Must be within horizontal tolerance range
+        const xDiff = noteX - clickedX;
+        if (xDiff < -leftTolerance || xDiff > rightTolerance) return false;
+        
+        // Must be at or below the clicked note
+        if (noteY < clickedY) return false;
+        
+        // If it's the clicked note itself, include it
+        if (note === clickedNote) return true;
+        
+        // For other notes, must be part of the list - check if it's at a position that's a multiple of snapGridSize*2
+        // from the clicked note's position
+        const yDiff = noteY - clickedY;
+        return yDiff % (snapGridSize * 2) === 0;
+    });
+    
+    // Sort notes by Y position (top to bottom)
+    notesInList.sort((a, b) => {
+        return parseInt(a.style.top) - parseInt(b.style.top);
+    });
+    
+    // Store the original positions before moving
+    const originalPositions = notesInList.map(note => ({
+        note: note,
+        top: parseInt(note.style.top)
+    }));
+    
+    // Move the clicked note and all notes below it down by snapGridSize * 2
+    notesInList.forEach(note => {
+        // Keep the original horizontal position when shifting down
+        note.style.top = `${parseInt(note.style.top) + snapGridSize * 2}px`;
+        sendToBackend(note);
+    });
+    
+    // Create a new note at the original position of the clicked note
+    let newNote;
+    if (clickedNote.classList.contains('list')) {
+        // For list items, use the same bullet type as the clicked note
+        const bulletStr = clickedNote.bulletStr || '';
+        newNote = createNote(clickedX, clickedY, bulletStr);
+    } else {
+        newNote = createNote(clickedX, clickedY);
+    }
+    
+    // Store the command-click data for potential undo
+    lastCommandClickData = {
+        originalPositions: originalPositions,
+        newNote: newNote,
+        timestamp: Date.now()
+    };
+    
+    updateCanvasSize();
 }
 
 function resizeInput(e) {
@@ -132,6 +212,7 @@ function createNote(x, y, text = null) {
     const note = createNoteElement(Date.now().toString(), x, y, text || '');
     editNote(note);
     updateCanvasSize();
+    return note; // Return the note element for tracking
 }
 
 window.createNote = createNote;
@@ -179,8 +260,16 @@ function saveNote(note, { doNotRemove } = {}) {
 
 function editNote(noteOrEvent) {
     let note;
+    let isCommandClick = false;
+    
     if (noteOrEvent instanceof Event) {
         var target = noteOrEvent.target;
+        
+        // Check if this is a command/ctrl click - if so, don't edit
+        if (noteOrEvent.metaKey || noteOrEvent.ctrlKey) {
+            isCommandClick = true;
+        }
+        
         if (target.tagName === 'INPUT' && target.type === 'checkbox') {
             return;
         }
@@ -189,6 +278,11 @@ function editNote(noteOrEvent) {
         note = noteOrEvent;
     } else {
         console.error('Invalid argument passed to editNote');
+        return;
+    }
+
+    // Return early if this is a command click - let the event bubble up
+    if (isCommandClick) {
         return;
     }
 
