@@ -45,7 +45,8 @@ function finalizeSelection() {
 }
 
 function clearSelectionBox() {
-    if (selectionBox) {
+    // Make sure selectionBox is defined before trying to use it
+    if (typeof selectionBox !== 'undefined' && selectionBox) {
         selectionBox.remove();
         selectionBox = null;
     }
@@ -110,20 +111,69 @@ function hideHorizontalLine() {
 }
 
 function handleHorizontalSelection(y) {
-    // Select all notes that are below the horizontal line
+    // Select all notes that are below the horizontal line and not to the left of the viewport
     const notes = document.querySelectorAll('.note');
     clearSelection();
     
-    // Get scroll offset for accurate comparison
+    // Get scroll offsets for accurate comparison
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const linePositionWithScroll = y + scrollTop;
     
     notes.forEach(note => {
         const noteRect = note.getBoundingClientRect();
         const noteTop = noteRect.top + scrollTop;
+        const noteLeft = noteRect.left + scrollLeft;
         
         // Check if note is below or at the same level as the horizontal line
-        if (noteTop >= linePositionWithScroll) {
+        // AND the note's left edge is not scrolled out of view (to the left of the viewport)
+        if (noteTop >= linePositionWithScroll && noteLeft >= scrollLeft) {
+            selectNote(note);
+        }
+    });
+}
+
+// Vertical selection line feature
+let verticalLine = null;
+// Using constants from main.js
+
+function createVerticalLine() {
+    if (!verticalLine) {
+        verticalLine = document.createElement('div');
+        verticalLine.className = 'vertical-selection-line';
+        document.body.appendChild(verticalLine);
+    }
+}
+
+function showVerticalLine(x) {
+    if (!verticalLine) {
+        createVerticalLine();
+    }
+    verticalLine.style.left = `${x}px`;
+    verticalLine.style.opacity = '1';
+}
+
+function hideVerticalLine() {
+    if (verticalLine) {
+        verticalLine.style.opacity = '0';
+    }
+}
+
+function handleVerticalSelection(x) {
+    // Select all notes that are to the right of the vertical line
+    const notes = document.querySelectorAll('.note');
+    clearSelection();
+    
+    // Get scroll offset for accurate comparison
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const linePositionWithScroll = x + scrollLeft;
+    
+    notes.forEach(note => {
+        const noteRect = note.getBoundingClientRect();
+        const noteLeft = noteRect.left + scrollLeft;
+        
+        // Check if note is to the right of or at the same position as the vertical line
+        if (noteLeft >= linePositionWithScroll) {
             selectNote(note);
         }
     });

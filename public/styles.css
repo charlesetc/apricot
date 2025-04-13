@@ -501,3 +501,26 @@ body.right-click-dragging {
   transform: translateX(-50vw);
   pointer-events: none;
 }
+
+.vertical-selection-line {
+  position: fixed;
+  width: 1px;
+  background-color: var(--selection-box-border-color);
+  height: 100vh;
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9;
+}
+
+.vertical-selection-line::before {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 20px;
+  background-color: var(--selection-box-border-color);
+  top: 50%;
+  left: -4px;
+  transform: translateY(-50vh);
+  pointer-events: none;
+}

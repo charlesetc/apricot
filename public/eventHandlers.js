@@ -112,8 +112,15 @@ function handleCanvasMouseMove(e) {
     // Handle horizontal selection line when near the left edge
     if (e.clientX <= EDGE_PROXIMITY) {
         showHorizontalLine(e.clientY);
+        hideVerticalLine(); // Hide vertical line when showing horizontal
+    } 
+    // Handle vertical selection line when near the top edge and past the minimum X position
+    else if (e.clientY <= TOP_PROXIMITY && e.clientX >= MIN_X_POSITION) {
+        showVerticalLine(e.clientX);
+        hideHorizontalLine(); // Hide horizontal line when showing vertical
     } else {
         hideHorizontalLine();
+        hideVerticalLine();
     }
     
     if (isDragging) {
@@ -149,6 +156,13 @@ function handleCanvasMouseUp(e) {
     if (e.clientX <= EDGE_PROXIMITY && horizontalLine && horizontalLine.style.opacity === '1') {
         handleHorizontalSelection(e.clientY);
         hideHorizontalLine();
+        return;
+    }
+    
+    // Check if clicking near the top edge with vertical line visible
+    if (e.clientY <= TOP_PROXIMITY && e.clientX >= MIN_X_POSITION && verticalLine && verticalLine.style.opacity === '1') {
+        handleVerticalSelection(e.clientX);
+        hideVerticalLine();
         return;
     }
     
@@ -198,6 +212,7 @@ function handleCanvasMouseUp(e) {
     }
     clearSelectionBox();
     hideHorizontalLine();
+    hideVerticalLine();
 }
 
 function selectFirstNote() {
