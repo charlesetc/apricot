@@ -6,6 +6,7 @@ let isMultiSelect = false;
 
 let dragStartPos = { x: 0, y: 0 };
 const DRAG_THRESHOLD = 5; // pixels
+const EDGE_PROXIMITY = 20; // Pixels from left edge to show vertical selection line
 
 let clientX = 0;
 let clientY = 0;
@@ -312,6 +313,9 @@ function initializeApp() {
   if (exportButton) {
     exportButton.style.display = 'none';
   }
+
+  // Initialize horizontal selection line
+  createHorizontalLine();
 
   canvas.addEventListener("mousedown", handleCanvasMouseDown);
   canvas.addEventListener("mousemove", handleCanvasMouseMove);

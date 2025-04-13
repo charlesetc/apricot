@@ -82,3 +82,49 @@ function rectsIntersect(rect1, rect2) {
              rect2.top > rect1.bottom ||
              rect2.bottom < rect1.top);
 }
+
+// Horizontal selection line feature
+let horizontalLine = null;
+// Using existing EDGE_PROXIMITY from main.js
+
+function createHorizontalLine() {
+    if (!horizontalLine) {
+        horizontalLine = document.createElement('div');
+        horizontalLine.className = 'horizontal-selection-line';
+        document.body.appendChild(horizontalLine);
+    }
+}
+
+function showHorizontalLine(y) {
+    if (!horizontalLine) {
+        createHorizontalLine();
+    }
+    horizontalLine.style.top = `${y}px`;
+    horizontalLine.style.opacity = '1';
+}
+
+function hideHorizontalLine() {
+    if (horizontalLine) {
+        horizontalLine.style.opacity = '0';
+    }
+}
+
+function handleHorizontalSelection(y) {
+    // Select all notes that are below the horizontal line
+    const notes = document.querySelectorAll('.note');
+    clearSelection();
+    
+    // Get scroll offset for accurate comparison
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const linePositionWithScroll = y + scrollTop;
+    
+    notes.forEach(note => {
+        const noteRect = note.getBoundingClientRect();
+        const noteTop = noteRect.top + scrollTop;
+        
+        // Check if note is below or at the same level as the horizontal line
+        if (noteTop >= linePositionWithScroll) {
+            selectNote(note);
+        }
+    });
+}

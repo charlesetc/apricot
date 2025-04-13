@@ -478,3 +478,26 @@ body.right-click-dragging {
   left: 4px;
   top: 2px;
 }
+
+.horizontal-selection-line {
+  position: fixed;
+  width: 100vw;
+  background-color: var(--selection-box-border-color);
+  height: 1px;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9;
+}
+
+.horizontal-selection-line::before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 4px;
+  background-color: var(--selection-box-border-color);
+  left: 50%;
+  top: -4px; 
+  transform: translateX(-50vw);
+  pointer-events: none;
+}

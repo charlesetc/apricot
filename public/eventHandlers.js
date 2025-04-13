@@ -109,6 +109,13 @@ function handleCanvasMouseMove(e) {
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     
+    // Handle horizontal selection line when near the left edge
+    if (e.clientX <= EDGE_PROXIMITY) {
+        showHorizontalLine(e.clientY);
+    } else {
+        hideHorizontalLine();
+    }
+    
     if (isDragging) {
         dragSelectedNotes(e);
     } else if (e.buttons === 1 && e.target === canvas) {
@@ -137,6 +144,13 @@ function handleCanvasMouseUp(e) {
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    // Check if clicking near the left edge with horizontal line visible
+    if (e.clientX <= EDGE_PROXIMITY && horizontalLine && horizontalLine.style.opacity === '1') {
+        handleHorizontalSelection(e.clientY);
+        hideHorizontalLine();
+        return;
+    }
     
     if (isSelecting) {
         isSelecting = false;
@@ -183,6 +197,7 @@ function handleCanvasMouseUp(e) {
         }
     }
     clearSelectionBox();
+    hideHorizontalLine();
 }
 
 function selectFirstNote() {
@@ -903,7 +918,8 @@ document.addEventListener('keyup', (e) => {
 });
 
 function stopBoxSelection() {
-    if (isSelecting) {
+    // Make sure isSelecting is defined
+    if (typeof isSelecting !== 'undefined' && isSelecting) {
         isSelecting = false;
         finalizeSelection();
     }
