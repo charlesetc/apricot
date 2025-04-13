@@ -135,7 +135,7 @@ function handleCommandClickInList(e) {
     
     // Define tolerance ranges (more tolerance to the right than left)
     const leftTolerance = 2 * snapGridSize; 
-    const rightTolerance = 6 * snapGridSize;
+    const rightTolerance = 10 * snapGridSize;
     
     // Find all notes that are part of the same vertical list
     // They can be slightly to the left or right of the clicked note
