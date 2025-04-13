@@ -334,6 +334,16 @@ body.right-click-dragging .note {
   z-index: 1000;
   opacity: 0;
   pointer-events: none;
+  border: 1px solid var(--text-color);
+}
+
+.toast.error {
+  background-color: rgb(247, 203, 203);
+  border: 2px solid red;
+}
+
+.toast.success {
+  background-color: rgb(163, 238, 163);
 }
 
 .modal {

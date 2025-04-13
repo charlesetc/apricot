@@ -179,7 +179,7 @@ function saveCanvasTitle() {
   }
 }
 
-function showToast(message, duration = 3000) {
+function showToast(message, type, duration) {
   // Remove any existing toast
   const existingToast = document.querySelector('.toast');
   if (existingToast) {
@@ -189,6 +189,13 @@ function showToast(message, duration = 3000) {
   // Create new toast
   const toast = document.createElement('div');
   toast.className = 'toast';
+  
+  // Add type-specific class
+  toast.classList.remove('success');
+  toast.classList.remove('error');
+  toast.classList.remove('normal');
+  toast.classList.add(type);
+  
   toast.textContent = message;
   document.body.appendChild(toast);
   
@@ -206,6 +213,18 @@ function showToast(message, duration = 3000) {
   }, duration);
 }
 
+function normalToast(message, duration = 3000) {
+  showToast(message, 'normal', duration);
+}
+
+function successToast(message, duration = 3000) {
+  showToast(message, 'success', duration);
+}
+
+function errorToast(message, duration = 3000) {
+  showToast(message, 'error', duration);
+}
+
 async function shareCanvas() {
   try {
     // First get the canvas name
@@ -213,7 +232,7 @@ async function shareCanvas() {
     const canvasData = await canvasResponse.json();
     
     // Show loading toast
-    showToast('Generating share link...');
+    normalToast('Generating share link...');
     
     try {
       // Get the read-only canvas HTML content with embedded CSS
@@ -254,19 +273,19 @@ async function shareCanvas() {
       
       if (successful) {
         // Show success toast
-        showToast('Share link copied to clipboard!');
+        successToast('Share link copied to clipboard!');
       } else {
         // Show URL toast if copy fails
-        showToast('Share link created: ' + result.shareUrl);
+        successToast('Share link created: ' + result.shareUrl);
       }
       
     } catch (error) {
-      showToast('Error sharing canvas: ' + error.message, 5000);
+      errorToast('Error sharing canvas: ' + error.message, 5000);
       console.error('Error sharing canvas:', error);
     }
   } catch (error) {
     console.error('Error sharing canvas:', error);
-    showToast('Failed to share canvas: ' + error.message, 5000);
+    errorToast('Failed to share canvas: ' + error.message, 5000);
   }
 }
 
@@ -311,7 +330,7 @@ function initializeApp() {
 async function duplicateCanvas() {
   try {
     // Show loading toast
-    showToast('Duplicating canvas...');
+    successToast('Duplicating canvas...');
     
     // First get the current canvas details
     const canvasResponse = await fetch(`/api/canvases/${canvasId}`);
@@ -378,7 +397,7 @@ async function duplicateCanvas() {
     
   } catch (error) {
     console.error('Error duplicating canvas:', error);
-    showToast('Failed to duplicate canvas: ' + error.message, 5000);
+    errorToast('Failed to duplicate canvas: ' + error.message, 5000);
   }
 }
 

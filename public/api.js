@@ -19,9 +19,17 @@ function sendToBackend(note) {
     },
     body: JSON.stringify(noteData),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to save: ${response.status}`);
+      }
+      return response.json();
+    })
     .then((data) => console.log("Note saved:", data))
-    .catch((error) => console.error("Error saving note:", error));
+    .catch((error) => {
+      console.error("Error saving note:", error);
+      errorToast("Failed to save note");
+    });
 }
 
 function deleteSingleNote(note) {
@@ -39,15 +47,25 @@ function deleteSelectedNotes() {
       selectedNotes.clear();
       updateCanvasSize();
     })
-    .catch((error) => console.error("Error deleting notes:", error));
+    .catch((error) => {
+      console.error("Error deleting notes:", error);
+      errorToast("Failed to delete notes");
+    });
 }
 
 function deleteNoteFromBackend(noteId) {
   return fetch(`/api/notes/${noteId}`, {
     method: "DELETE",
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to delete: ${response.status}`);
+      }
+      return response.json();
+    })
     .then((data) => console.log("Note deleted:", data))
-    .catch((error) => console.error("Error deleting note:", error));
-
+    .catch((error) => {
+      console.error("Error deleting note:", error);
+      errorToast("Failed to delete note");
+    });
 }
