@@ -322,9 +322,9 @@ function handleKeyDown(e) {
                 
                 // User wants to undo the command-click operation
                 
-                // Get the value of the input to check if it's empty
+                // Get the value of the input to check if it's semantically empty
                 const input = note.querySelector('.note-input');
-                const isEmpty = input && (!input.value || input.value.trim() === '');
+                const isEmpty = input && isMeaninglessContent(input.value);
                 
                 if (isEmpty) {
                     // Delete the newly created empty note

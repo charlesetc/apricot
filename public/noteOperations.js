@@ -184,7 +184,7 @@ function handleCommandClickInList(e) {
     let newNote;
     if (clickedNote.classList.contains('list')) {
         // For list items, use the same bullet type as the clicked note
-        const bulletStr = clickedNote.bulletStr || '';
+        const bulletStr = (clickedNote.bulletStr || '') + ' ';
         newNote = createNote(clickedX, clickedY, bulletStr);
     } else {
         newNote = createNote(clickedX, clickedY);
