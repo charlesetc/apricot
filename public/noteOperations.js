@@ -196,6 +196,9 @@ function handleCommandClickInList(e) {
         timestamp: Date.now()
     };
     
+    // Record the command-click action for undo
+    recordCommandClickAction(lastCommandClickData);
+    
     updateCanvasSize();
 }
 
@@ -209,6 +212,8 @@ var currentlyEditing = null;
 function createNote(x, y, text = null) {
     clearSelection();
     const note = createNoteElement(Date.now().toString(), x, y, text || '');
+    // Record the create action for undo
+    recordCreateAction(note);
     editNote(note);
     updateCanvasSize();
     return note; // Return the note element for tracking
@@ -244,6 +249,37 @@ function saveNote(note, { doNotRemove } = {}) {
     if (isMeaninglessContent(text) && !doNotRemove) {
         deleteSingleNote(note);
     } else {
+        // Update any undo action associated with this note in the undo stack
+        if (window.undoStack) {
+            const noteId = note.getAttribute('data-id');
+            // Look for any actions with this note ID
+            for (const action of window.undoStack) {
+                // Update create actions
+                if (action.type === 'create' && action.noteId === noteId) {
+                    action.content = text;
+                }
+                
+                // Update delete actions
+                if (action.type === 'delete' && action.noteId === noteId) {
+                    action.content = text;
+                }
+                
+                // Update multi-delete actions
+                if (action.type === 'multi_delete' && action.notes) {
+                    for (const noteData of action.notes) {
+                        if (noteData.noteId === noteId) {
+                            noteData.content = text;
+                        }
+                    }
+                }
+                
+                // Update command-click actions
+                if (action.type === 'command_click' && action.newNoteId === noteId) {
+                    action.newNoteContent = text;
+                }
+            }
+        }
+        
         initializeNoteContents(note, text);
         sendToBackend(note);
     }

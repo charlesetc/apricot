@@ -278,20 +278,51 @@ function handleKeyDown(e) {
         return;
     }
     
+    // Handle undo/redo shortcuts
+    if (handleUndoRedoShortcuts(e)) {
+        return; // Event was handled by undo/redo
+    }
+    
     if (e.key === 'Tab' && !currentlyEditing) {
         if (selectedNotes.size === 0) {
             e.preventDefault();
             selectFirstNote();
         } else {
             e.preventDefault();
+            // Store positions before moving for undo
+            const movements = [];
+            selectedNotes.forEach(note => {
+                movements.push({
+                    noteId: note.getAttribute('data-id'),
+                    oldPosition: {
+                        x: parseInt(note.style.left),
+                        y: parseInt(note.style.top)
+                    }
+                });
+            });
+            
+            // Move notes
             const offset = e.shiftKey ? -1 * snapGridSize : snapGridSize;
             selectedNotes.forEach(note => {
                 note.style.left = `${parseInt(note.style.left) + offset}px`;
-                console.log("note", note, note.getAttribute('data-id'));
                 if (note.getAttribute('data-id')) {
                     saveNote(note);
                 }
             });
+            
+            // Record final positions for undo
+            movements.forEach(movement => {
+                const note = document.querySelector(`.note[data-id="${movement.noteId}"]`);
+                if (note) {
+                    movement.newPosition = {
+                        x: parseInt(note.style.left),
+                        y: parseInt(note.style.top)
+                    };
+                }
+            });
+            
+            // Record the multi-move action
+            recordMultiMoveAction(movements);
         }
     } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && 
                !currentlyEditing && 
@@ -300,6 +331,19 @@ function handleKeyDown(e) {
         if (selectedNotes.size === 1 && !e.ctrlKey) {
             moveSelection(e.key);
         } else if (selectedNotes.size > 1 || e.ctrlKey) {
+            // Store positions before moving for undo
+            const movements = [];
+            selectedNotes.forEach(note => {
+                movements.push({
+                    noteId: note.getAttribute('data-id'),
+                    oldPosition: {
+                        x: parseInt(note.style.left),
+                        y: parseInt(note.style.top)
+                    }
+                });
+            });
+            
+            // Move notes
             const offset = e.shiftKey ? snapGridSize * 5 : snapGridSize;
             selectedNotes.forEach(note => {
                 if (e.key === 'ArrowUp') {
@@ -311,11 +355,25 @@ function handleKeyDown(e) {
                 } else if (e.key === 'ArrowRight') {
                     note.style.left = `${parseInt(note.style.left) + offset}px`;
                 }
-                console.log("note", note, note.getAttribute('data-id'));
+                
                 if (note.getAttribute('data-id')) {
                     saveNote(note);
                 }
             });
+            
+            // Record final positions for undo
+            movements.forEach(movement => {
+                const note = document.querySelector(`.note[data-id="${movement.noteId}"]`);
+                if (note) {
+                    movement.newPosition = {
+                        x: parseInt(note.style.left),
+                        y: parseInt(note.style.top)
+                    };
+                }
+            });
+            
+            // Record the multi-move action
+            recordMultiMoveAction(movements);
         } else if (selectedNotes.size === 0) {
             selectFirstNote();
         }
@@ -329,6 +387,12 @@ function handleKeyDown(e) {
 
         if (!isEditing && selectedNotes.size > 0) {
             e.preventDefault();
+            // Record the delete action for undo
+            if (selectedNotes.size === 1) {
+                recordDeleteAction(Array.from(selectedNotes)[0]);
+            } else {
+                recordMultiDeleteAction(selectedNotes);
+            }
             deleteSelectedNotes();
         }
     } else if (e.key === "Escape") {
@@ -389,7 +453,6 @@ function handleKeyDown(e) {
         });
 
         const bullets = ['[]', '•', '-', ''];
-        console.log(first_note, first_note.bulletStr);
         const bulletIndex = bullets.indexOf(first_note.bulletStr || '');
         let newBullet = bullets[(bulletIndex + 1) % bullets.length];
         if (newBullet !== '') {
@@ -408,7 +471,6 @@ function handleKeyDown(e) {
 
     maybeCopySelectedNotes(e);
     maybeCutSelectedNotes(e);
-
 }
 
 function moveSelection(direction) {

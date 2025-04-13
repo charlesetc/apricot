@@ -1,5 +1,8 @@
 // dragOperations.js
 
+// Variable to store positions at the start of a drag for undo functionality
+let dragStartPositions = [];
+
 function startDragging(e) {
     isDragging = true;
     currentNote = e.target.closest('.note');
@@ -12,10 +15,31 @@ function startDragging(e) {
     offsetX = e.clientX + scrollLeft - currentNote.offsetLeft;
     offsetY = e.clientY + scrollTop - currentNote.offsetTop;
 
+    // Store original positions for undo
+    dragStartPositions = [];
+    selectedNotes.forEach(note => {
+        dragStartPositions.push({
+            noteId: note.getAttribute('data-id'),
+            oldPosition: {
+                x: parseInt(note.style.left),
+                y: parseInt(note.style.top)
+            }
+        });
+    });
+
     // If the clicked note is not in the selection, clear selection and select only this note
     if (!selectedNotes.has(currentNote)) {
         clearSelection();
         selectNote(currentNote);
+        
+        // Update dragStartPositions for the newly selected note
+        dragStartPositions = [{
+            noteId: currentNote.getAttribute('data-id'),
+            oldPosition: {
+                x: parseInt(currentNote.style.left),
+                y: parseInt(currentNote.style.top)
+            }
+        }];
     }
 
     e.stopPropagation();
@@ -58,9 +82,41 @@ function stopDragging() {
     selectedNotes.forEach(note => {
         note.style.left = `${evenNumber(note.offsetLeft + 10, snapGridSize)}px`
         note.style.top = `${evenNumber(note.offsetTop + 10, snapGridSize)}px`
-    })
+    });
 
     selectedNotes.forEach(sendToBackend);
+    
+    // Record move actions for undo/redo
+    if (dragStartPositions && dragStartPositions.length > 0) {
+        const movements = dragStartPositions.map(item => {
+            const note = document.querySelector(`.note[data-id="${item.noteId}"]`);
+            if (note) {
+                return {
+                    noteId: item.noteId,
+                    oldPosition: item.oldPosition,
+                    newPosition: {
+                        x: parseInt(note.style.left),
+                        y: parseInt(note.style.top)
+                    }
+                };
+            }
+            return null;
+        }).filter(Boolean);
+        
+        if (movements.length > 0) {
+            if (movements.length === 1) {
+                const note = document.querySelector(`.note[data-id="${movements[0].noteId}"]`);
+                if (note) {
+                    recordMoveAction(note, movements[0].oldPosition);
+                }
+            } else {
+                recordMultiMoveAction(movements);
+            }
+        }
+    }
+    
+    // Clear the stored positions
+    dragStartPositions = [];
 }
 
 // Make functions global

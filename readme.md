@@ -22,11 +22,14 @@ You'll also have to `mkdir public/uploads`.
 - `ctrl+` arrow keys to move a single note when editing
 - `cmd+/` to search different canvases
 - `backspace` to delete notes when selecting
+- `cmd+z` to undo an action
+- `cmd+shift+z` or `cmd+y` to redo an action
 
 
 ### Other things
 
 - Any change is saved to the server immediately
-- There is no undo/redo yet (be careful!)
 - Notes are saved to a single `notes.db` file in the root directory of the project
 - Pasted images are saved to the `public/uploads` directory
+- Undo/redo supports: creating notes, deleting notes, moving notes, and command-click operations
+- Multiple notes can be moved or deleted as a single undoable action
