@@ -127,7 +127,7 @@ function handleHorizontalSelection(y) {
         
         // Check if note is below or at the same level as the horizontal line
         // AND the note's left edge is not scrolled out of view (to the left of the viewport)
-        if (noteTop >= linePositionWithScroll && noteLeft >= scrollLeft) {
+        if (noteTop + 24 >= linePositionWithScroll && noteLeft >= scrollLeft) {
             selectNote(note);
         }
     });
