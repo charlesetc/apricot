@@ -67,8 +67,8 @@ function updateSidebar() {
     const tabActions = document.createElement('div');
     tabActions.className = 'tab-actions';
     
-    // Only show delete button if it's not the default tab or if there are other tabs
-    if (tab.name !== 'default' || tabs.length > 1) {
+    // Only show delete button if there are more than 1 tab remaining
+    if (tabs.length > 1) {
       const deleteButton = document.createElement('button');
       deleteButton.textContent = '×';
       deleteButton.className = 'delete-tab-button';
@@ -121,24 +121,6 @@ function toggleSidebar() {
   }
 }
 
-function createSidebarToggleButton() {
-  // Remove existing button if any
-  const existingButton = document.getElementById('sidebar-toggle-button');
-  if (existingButton) {
-    existingButton.remove();
-  }
-  
-  const button = document.createElement('button');
-  button.id = 'sidebar-toggle-button';
-  button.className = 'sidebar-toggle-button';
-  button.textContent = '☰';
-  button.title = 'Toggle sidebar (Cmd+Shift+S)';
-  
-  button.addEventListener('click', toggleSidebar);
-  
-  document.body.appendChild(button);
-  return button;
-}
 
 async function handleNewTab() {
   const tabName = prompt('Enter tab name:');
@@ -213,7 +195,6 @@ function editTabName(tab) {
 // Initialize sidebar when DOM is loaded
 function initializeSidebar() {
   createSidebar();
-  createSidebarToggleButton();
   hideSidebar(); // Start with sidebar hidden
 }
 

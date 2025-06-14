@@ -352,68 +352,35 @@ function createCurrentTabDisplay() {
     existingDisplay.remove();
   }
   
-  // Create current tab display element
-  const tabDisplay = document.createElement('div');
+  // Create current tab display element as a button
+  const tabDisplay = document.createElement('button');
   tabDisplay.id = 'current-tab-name';
   tabDisplay.textContent = 'Loading...';
+  tabDisplay.title = 'Toggle sidebar (Cmd+Shift+S)';
   
-  // Add click handler to make tab name editable
-  tabDisplay.addEventListener('click', editCurrentTabName);
+  // Add click handler to toggle sidebar
+  tabDisplay.addEventListener('click', toggleSidebar);
+  
+  // Add double-click handler to open sidebar and edit current tab name
+  tabDisplay.addEventListener('dblclick', handleCurrentTabDoubleClick);
   
   document.body.appendChild(tabDisplay);
   return tabDisplay;
 }
 
-function editCurrentTabName() {
-  const tabDisplay = document.getElementById('current-tab-name');
-  const currentTab = getCurrentTab();
+function handleCurrentTabDoubleClick(e) {
+  e.stopPropagation();
   
-  if (!tabDisplay || !currentTab) return;
+  // Show the sidebar first
+  showSidebar();
   
-  const currentName = currentTab.name;
-  
-  // Create input element
-  const inputElement = document.createElement('input');
-  inputElement.type = 'text';
-  inputElement.value = currentName;
-  inputElement.className = 'current-tab-edit-input';
-  
-  // Replace display with input
-  tabDisplay.style.display = 'none';
-  tabDisplay.parentNode.insertBefore(inputElement, tabDisplay);
-  
-  // Focus and select
-  inputElement.focus();
-  inputElement.select();
-  
-  // Save on blur or Enter
-  const saveEdit = async () => {
-    const newName = inputElement.value.trim();
-    
-    if (newName && newName !== currentName) {
-      const updatedTab = await updateTab(currentTab.id, newName);
-      if (updatedTab) {
-        updateCurrentTabDisplay();
-        updateSidebar();
-        successToast('Tab renamed successfully');
-      }
-    } else {
-      // Revert changes
-      tabDisplay.style.display = '';
-      inputElement.remove();
+  // Wait a bit for the sidebar to be visible, then find and edit the current tab
+  setTimeout(() => {
+    const currentTab = getCurrentTab();
+    if (currentTab) {
+      editTabName(currentTab);
     }
-  };
-  
-  inputElement.addEventListener('blur', saveEdit);
-  inputElement.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      saveEdit();
-    } else if (e.key === 'Escape') {
-      tabDisplay.style.display = '';
-      inputElement.remove();
-    }
-  });
+  }, 100);
 }
 
 async function duplicateCanvas() {
