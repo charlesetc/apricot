@@ -174,6 +174,8 @@ function saveCanvasTitle() {
       titleElement.textContent = newName;
       // Update document title to match new canvas name
       document.title = newName;
+      // Show success toast
+      successToast('Canvas renamed successfully');
     })
     .catch(error => {
       console.error('Error updating canvas title:', error);
