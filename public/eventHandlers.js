@@ -948,13 +948,6 @@ function stopBoxSelection() {
 document.addEventListener('mouseup', stopCanvasDragging);
 document.addEventListener('mouseup', stopBoxSelection);
 
-// Add click-outside-to-close sidebar functionality
-document.addEventListener('click', (e) => {
-  // Check if sidebar is visible and click is outside sidebar
-  if (window.sidebarVisible && !e.target.closest('.tab-sidebar') && !e.target.closest('#current-tab-name')) {
-    window.hideSidebar();
-  }
-});
 
 
 window.addEventListener("blur", function (event) {
