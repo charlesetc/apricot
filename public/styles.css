@@ -524,3 +524,162 @@ body.right-click-dragging {
   transform: translateY(-50vh);
   pointer-events: none;
 }
+
+/* Tab Sidebar Styles */
+.tab-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  background-color: var(--modal-bg-color);
+  border-right: 1px solid var(--note-border-color);
+  z-index: 1000;
+  display: none;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid var(--note-border-color);
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+.new-tab-button {
+  background-color: var(--button-bg-color);
+  border: none;
+  border-radius: 3px;
+  padding: 5px 10px;
+  cursor: pointer;
+  color: var(--text-color);
+  font-size: 16px;
+  min-width: 30px;
+}
+
+.new-tab-button:hover {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+}
+
+.tabs-list {
+  padding: 10px 0;
+}
+
+.tab-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+}
+
+.tab-item:hover {
+  background-color: var(--note-bg-color);
+}
+
+.tab-item.active {
+  background-color: var(--selection-box-bg-color);
+  border-left: 3px solid var(--highlight-color);
+}
+
+.tab-name {
+  flex: 1;
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+.tab-actions {
+  opacity: 0;
+  display: flex;
+  gap: 5px;
+}
+
+.tab-item:hover .tab-actions {
+  opacity: 1;
+}
+
+.delete-tab-button {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.delete-tab-button:hover {
+  background-color: var(--delete-button-bg-color);
+  color: var(--delete-button-color);
+}
+
+.tab-name-edit-input {
+  background: var(--note-bg-color);
+  border: 1px solid var(--highlight-color);
+  border-radius: 2px;
+  padding: 2px 4px;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--text-color);
+  outline: none;
+  width: 100%;
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle-button {
+  position: fixed;
+  top: 10px;
+  right: 50px;
+  padding: 5px 10px;
+  background-color: var(--button-bg-color);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--text-color);
+  font-size: 14px;
+  z-index: 100;
+}
+
+.sidebar-toggle-button:hover {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+}
+
+/* Current Tab Display */
+#current-tab-name {
+  position: fixed;
+  top: 10px;
+  left: 200px;
+  padding: 5px 8px;
+  background-color: var(--note-bg-color);
+  border-radius: 3px;
+  color: var(--text-color);
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 100;
+  border: 1px solid transparent;
+}
+
+#current-tab-name:hover {
+  border-color: var(--highlight-color);
+}
+
+.current-tab-edit-input {
+  background: var(--note-bg-color);
+  border: 1px solid var(--highlight-color);
+  border-radius: 3px;
+  padding: 5px 8px;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--text-color);
+  outline: none;
+}

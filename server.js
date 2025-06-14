@@ -53,14 +53,36 @@ const db = new sqlite3.Database('./notes.db', (err) => {
             name TEXT NOT NULL,
             Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )`);
+        db.run(`CREATE TABLE IF NOT EXISTS tabs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            canvas_id INTEGER,
+            name TEXT NOT NULL,
+            sort_order INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (canvas_id) REFERENCES canvases (id)
+        )`);
         db.run(`CREATE TABLE IF NOT EXISTS notes (
             id TEXT PRIMARY KEY,
             canvas_id INTEGER,
+            tab_id INTEGER,
             text TEXT,
             x INTEGER,
             y INTEGER,
-            FOREIGN KEY (canvas_id) REFERENCES canvases (id)
+            FOREIGN KEY (canvas_id) REFERENCES canvases (id),
+            FOREIGN KEY (tab_id) REFERENCES tabs (id)
         )`);
+        
+        // Create default tab for existing canvases that don't have tabs
+        db.run(`INSERT OR IGNORE INTO tabs (canvas_id, name, sort_order) 
+                SELECT id, 'default', 0 FROM canvases 
+                WHERE id NOT IN (SELECT DISTINCT canvas_id FROM tabs WHERE canvas_id IS NOT NULL)`);
+        
+        // Update existing notes to use the default tab
+        db.run(`UPDATE notes SET tab_id = (
+                    SELECT tabs.id FROM tabs 
+                    WHERE tabs.canvas_id = notes.canvas_id 
+                    AND tabs.name = 'default'
+                ) WHERE tab_id IS NULL`);
     }
 });
 
@@ -72,7 +94,18 @@ app.post('/api/canvases', (req, res) => {
             res.status(500).json({ error: err.message });
             return;
         }
-        res.json({ id: this.lastID, name });
+        
+        const canvasId = this.lastID;
+        
+        // Create default tab for the new canvas
+        db.run('INSERT INTO tabs (canvas_id, name, sort_order) VALUES (?, "default", 0)', 
+               [canvasId], function(tabErr) {
+            if (tabErr) {
+                console.error('Error creating default tab:', tabErr.message);
+                // Still return success for canvas creation even if tab creation fails
+            }
+            res.json({ id: canvasId, name });
+        });
     });
 });
 
@@ -171,12 +204,99 @@ app.delete('/api/canvases/:id', (req, res) => {
     });
 });
 
+// Tab endpoints
+app.get('/api/tabs/:canvasId', (req, res) => {
+    const canvasId = req.params.canvasId;
+    db.all('SELECT * FROM tabs WHERE canvas_id = ? ORDER BY name DESC', [canvasId], (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(rows);
+    });
+});
+
+app.post('/api/tabs', (req, res) => {
+    const { canvas_id, name } = req.body;
+    
+    if (!name || name.trim() === '') {
+        return res.status(400).json({ error: 'Tab name cannot be empty' });
+    }
+    
+    db.run('INSERT INTO tabs (canvas_id, name, sort_order) VALUES (?, ?, 0)', 
+           [canvas_id, name.trim()], function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ id: this.lastID, canvas_id, name: name.trim() });
+    });
+});
+
+app.put('/api/tabs/:id', (req, res) => {
+    const { id } = req.params;
+    const { name } = req.body;
+    
+    if (!name || name.trim() === '') {
+        return res.status(400).json({ error: 'Tab name cannot be empty' });
+    }
+    
+    db.run('UPDATE tabs SET name = ? WHERE id = ?', [name.trim(), id], function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'Tab not found' });
+        }
+        
+        db.get('SELECT * FROM tabs WHERE id = ?', [id], (err, row) => {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            res.json({ message: 'Tab updated successfully', tab: row });
+        });
+    });
+});
+
+app.delete('/api/tabs/:id', (req, res) => {
+    const { id } = req.params;
+    
+    // First, delete all notes in this tab
+    db.run('DELETE FROM notes WHERE tab_id = ?', [id], function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        
+        const notesDeleted = this.changes;
+        
+        // Now delete the tab
+        db.run('DELETE FROM tabs WHERE id = ?', [id], function(err) {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            
+            if (this.changes === 0) {
+                return res.status(404).json({ error: 'Tab not found' });
+            }
+            
+            res.json({ 
+                message: 'Tab and all its notes deleted successfully', 
+                notesDeleted: notesDeleted 
+            });
+        });
+    });
+});
 
 // Note endpoints
 app.post('/api/notes', (req, res) => {
-    const { id, canvas_id, text, x, y } = req.body;
-    db.run('INSERT OR REPLACE INTO notes (id, canvas_id, text, x, y) VALUES (?, ?, ?, ?, ?)', 
-           [id, canvas_id, text, x, y], (err) => {
+    const { id, canvas_id, tab_id, text, x, y } = req.body;
+    db.run('INSERT OR REPLACE INTO notes (id, canvas_id, tab_id, text, x, y) VALUES (?, ?, ?, ?, ?, ?)', 
+           [id, canvas_id, tab_id, text, x, y], (err) => {
         if (err) {
             res.status(500).json({ error: err.message });
             return;

@@ -4,7 +4,7 @@ let lastMouseX, lastMouseY;
 
 function findNoteAtPosition(x, y) {
     let element = document.elementFromPoint(x, y);
-    
+
     while (element && element !== document.body) {
         if (element.classList.contains('note')) {
             return element;
@@ -23,7 +23,7 @@ function findListNoteAbove(x, y) {
         var rect = note.getBoundingClientRect();
         if (Math.abs(rect.left - x) <= 160) {
             return note;
-        } 
+        }
     }
 
     return null;
@@ -37,7 +37,7 @@ function findListNoteBelow(x, y) {
         var rect = note.getBoundingClientRect();
         if (Math.abs(rect.left - x) <= 160) {
             return note;
-        } 
+        }
     }
 
     return null;
@@ -60,10 +60,10 @@ function handleCanvasMouseDown(e) {
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
-    mouseDownPos = { 
-        x: e.clientX + scrollLeft, 
-        y: e.clientY + scrollTop 
+
+    mouseDownPos = {
+        x: e.clientX + scrollLeft,
+        y: e.clientY + scrollTop
     };
 
     if (e.button === 1) {
@@ -71,7 +71,7 @@ function handleCanvasMouseDown(e) {
         startCanvasDragging(e);
         return;
     }
-    
+
     if (e.target === canvas) {
         clearSelectionBox();
         if (!e.ctrlKey && !e.shiftKey) {
@@ -95,7 +95,7 @@ function handleCanvasMouseDown(e) {
 
 SCROLL_MULTIPLIER = 1.5;
 
-function handleCanvasMouseMove(e) {    
+function handleCanvasMouseMove(e) {
     if (isCanvasDragging) {
         const dx = e.clientX - lastMouseX;
         const dy = e.clientY - lastMouseY;
@@ -108,12 +108,12 @@ function handleCanvasMouseMove(e) {
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
+
     // Handle horizontal selection line when near the left edge
     if (e.clientX <= EDGE_PROXIMITY) {
         showHorizontalLine(e.clientY);
         hideVerticalLine(); // Hide vertical line when showing horizontal
-    } 
+    }
     // Handle vertical selection line when near the top edge and past the minimum X position
     else if (e.clientY <= TOP_PROXIMITY && e.clientX >= MIN_X_POSITION) {
         showVerticalLine(e.clientX);
@@ -122,20 +122,20 @@ function handleCanvasMouseMove(e) {
         hideHorizontalLine();
         hideVerticalLine();
     }
-    
+
     if (isDragging) {
         dragSelectedNotes(e);
     } else if (e.buttons === 1 && e.target === canvas) {
         const dx = (e.clientX + scrollLeft) - mouseDownPos.x;
         const dy = (e.clientY + scrollTop) - mouseDownPos.y;
-        if (Math.sqrt(dx*dx + dy*dy) > CLICK_THRESHOLD) {
+        if (Math.sqrt(dx * dx + dy * dy) > CLICK_THRESHOLD) {
             isSelecting = true;
             if (!selectionBox) {
                 createSelectionBox(mouseDownPos.x, mouseDownPos.y);
             }
         }
     }
-    
+
     if (isSelecting && selectionBox) {
         updateSelectionBox(e.clientX + scrollLeft, e.clientY + scrollTop);
         highlightSelection();
@@ -151,21 +151,21 @@ function handleCanvasMouseUp(e) {
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
+
     // Check if clicking near the left edge with horizontal line visible
     if (e.clientX <= EDGE_PROXIMITY && horizontalLine && horizontalLine.style.opacity === '1') {
         handleHorizontalSelection(e.clientY);
         hideHorizontalLine();
         return;
     }
-    
+
     // Check if clicking near the top edge with vertical line visible
     if (e.clientY <= TOP_PROXIMITY && e.clientX >= MIN_X_POSITION && verticalLine && verticalLine.style.opacity === '1') {
         handleVerticalSelection(e.clientX);
         hideVerticalLine();
         return;
     }
-    
+
     if (isSelecting) {
         isSelecting = false;
         finalizeSelection();
@@ -177,7 +177,7 @@ function handleCanvasMouseUp(e) {
             editNote(e);
         }
     } else if (e.target.closest('.note')) {
-        
+
         if (e.target.tagName === 'A' && !e.metaKey && !e.shiftKey) {
             window.open(e.target.href, '_blank');
             return;
@@ -192,7 +192,7 @@ function handleCanvasMouseUp(e) {
         if (Math.sqrt(dx * dx + dy * dy) <= CLICK_THRESHOLD) {
             const listNoteAbove = findListNoteAbove(e.clientX, e.clientY);
             const listNoteBelow = findListNoteBelow(e.clientX, e.clientY);
-            
+
             if (listNoteAbove) {
                 const listNoteRect = listNoteAbove.getBoundingClientRect();
                 let newListNoteX = listNoteRect.left + scrollLeft;
@@ -203,7 +203,7 @@ function handleCanvasMouseUp(e) {
                 let newListNoteX = listNoteRect.left + scrollLeft;
                 let newListNoteY = listNoteRect.top + scrollTop - snapGridSize * 2;
                 createNote(newListNoteX, newListNoteY, nextBulletStr(listNoteBelow.bulletStr));
-            } else {            
+            } else {
                 let newNoteX = evenNumber(e.clientX + scrollLeft, snapGridSize);
                 let newNoteY = evenNumber(e.clientY + scrollTop, snapGridSize);
                 createNote(newNoteX, newNoteY);
@@ -225,7 +225,7 @@ function selectFirstNote() {
     notes.forEach(note => {
         const rect = note.getBoundingClientRect();
         const distance = Math.sqrt(rect.left * rect.left + rect.top * rect.top);
-        
+
         if (distance < minDistance) {
             minDistance = distance;
             topLeftNote = note;
@@ -242,15 +242,15 @@ let searchResults = document.getElementById('search-results');
 
 function toggleSearchOverlay() {
     fetch('/api/canvases')
-    .then(response => response.json())
-    .then(canvases => {
-        displaySearchResults(canvases);
-    }).then(() => {
-        searchOverlay.style.display = searchOverlay.style.display === 'block' ? 'none' : 'block';
-        if (searchOverlay.style.display === 'block') {
-            searchInput.focus();
-        }
-    });
+        .then(response => response.json())
+        .then(canvases => {
+            displaySearchResults(canvases);
+        }).then(() => {
+            searchOverlay.style.display = searchOverlay.style.display === 'block' ? 'none' : 'block';
+            if (searchOverlay.style.display === 'block') {
+                searchInput.focus();
+            }
+        });
 }
 
 function displaySearchResults(canvases) {
@@ -299,20 +299,20 @@ function searchCanvases() {
 
 function handleKeyDown(e) {
     // Check if the title input is focused
-    const isTitleEditing = document.activeElement && 
-                          document.activeElement.classList && 
-                          document.activeElement.classList.contains('title-edit-input');
-                          
+    const isTitleEditing = document.activeElement &&
+        document.activeElement.classList &&
+        document.activeElement.classList.contains('title-edit-input');
+
     if (isTitleEditing) {
         // Don't intercept keydown events when editing the title
         return;
     }
-    
+
     // Handle undo/redo shortcuts
     if (handleUndoRedoShortcuts(e)) {
         return; // Event was handled by undo/redo
     }
-    
+
     if (e.key === 'Tab' && !currentlyEditing) {
         if (selectedNotes.size === 0) {
             e.preventDefault();
@@ -330,7 +330,7 @@ function handleKeyDown(e) {
                     }
                 });
             });
-            
+
             // Move notes
             const offset = e.shiftKey ? -1 * snapGridSize : snapGridSize;
             selectedNotes.forEach(note => {
@@ -339,7 +339,7 @@ function handleKeyDown(e) {
                     saveNote(note);
                 }
             });
-            
+
             // Record final positions for undo
             movements.forEach(movement => {
                 const note = document.querySelector(`.note[data-id="${movement.noteId}"]`);
@@ -350,13 +350,13 @@ function handleKeyDown(e) {
                     };
                 }
             });
-            
+
             // Record the multi-move action
             recordMultiMoveAction(movements);
         }
-    } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && 
-               !currentlyEditing && 
-               !e.metaKey) {
+    } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) &&
+        !currentlyEditing &&
+        !e.metaKey) {
         e.preventDefault();
         if (selectedNotes.size === 1 && !e.ctrlKey) {
             moveSelection(e.key);
@@ -372,7 +372,7 @@ function handleKeyDown(e) {
                     }
                 });
             });
-            
+
             // Move notes
             const offset = e.shiftKey ? snapGridSize * 5 : snapGridSize;
             selectedNotes.forEach(note => {
@@ -385,12 +385,12 @@ function handleKeyDown(e) {
                 } else if (e.key === 'ArrowRight') {
                     note.style.left = `${parseInt(note.style.left) + offset}px`;
                 }
-                
+
                 if (note.getAttribute('data-id')) {
                     saveNote(note);
                 }
             });
-            
+
             // Record final positions for undo
             movements.forEach(movement => {
                 const note = document.querySelector(`.note[data-id="${movement.noteId}"]`);
@@ -401,7 +401,7 @@ function handleKeyDown(e) {
                     };
                 }
             });
-            
+
             // Record the multi-move action
             recordMultiMoveAction(movements);
         } else if (selectedNotes.size === 0) {
@@ -428,36 +428,36 @@ function handleKeyDown(e) {
     } else if (e.key === "Escape") {
         if (currentlyEditing) {
             const note = currentlyEditing;
-            
+
             // Check if this is a note created by command-click that is being edited
             // and the user pressed Escape without entering any text
-            if (lastCommandClickData && 
-                lastCommandClickData.newNote === note && 
+            if (lastCommandClickData &&
+                lastCommandClickData.newNote === note &&
                 Date.now() - lastCommandClickData.timestamp < 30000) {
-                
+
                 // User wants to undo the command-click operation
-                
+
                 // Get the value of the input to check if it's semantically empty
                 const input = note.querySelector('.note-input');
                 const isEmpty = input && isMeaninglessContent(input.value);
-                
+
                 if (isEmpty) {
                     // Delete the newly created empty note
                     deleteSingleNote(note);
-                    
+
                     // Restore original positions of moved notes
                     lastCommandClickData.originalPositions.forEach(item => {
                         item.note.style.top = `${item.top}px`;
                         sendToBackend(item.note);
                     });
-                    
+
                     updateCanvasSize();
                     lastCommandClickData = null; // Clear the command-click data
                     currentlyEditing = null;
                     return;
                 }
             }
-            
+
             // Normal behavior for Escape during editing
             saveNote(note);
             clearSelection();
@@ -466,6 +466,10 @@ function handleKeyDown(e) {
         } else if (selectedNotes.size > 0) {
             clearSelection();
         }
+    } else if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'S' || e.key === 's')) {
+        console.log("HI THERE");
+        e.preventDefault();
+        toggleSidebar();
     } else if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
     } else if (e.key == 'l' && (e.ctrlKey)) {
@@ -475,7 +479,7 @@ function handleKeyDown(e) {
         if (selectedNotes.size === 0) return;
 
         let first_note = Array.from(selectedNotes)[0];
-        
+
         selectedNotes.forEach(note => {
             if (parseInt(first_note.style.top) > parseInt(note.style.top)) {
                 first_note = note;
@@ -507,13 +511,13 @@ function moveSelection(direction) {
     const currentNote = Array.from(selectedNotes)[0];
     const currentRect = currentNote.getBoundingClientRect();
     const notes = Array.from(document.querySelectorAll('.note'));
-    
+
     let closestNote = null;
     let minDistance = Infinity;
 
     notes.forEach(note => {
         if (note === currentNote) return;
-        
+
         const rect = note.getBoundingClientRect();
         let distance;
 
@@ -566,7 +570,7 @@ function handleInput(e) {
         e.preventDefault();
 
         const offset = e.shiftKey ? -1 * snapGridSize * 2 : snapGridSize * 2;
-        
+
 
         const note = e.target.closest('.note');
         saveNote(note);
@@ -577,7 +581,7 @@ function handleInput(e) {
 
         let existingNote = document.elementFromPoint(newNoteX - window.scrollX + 4, newNoteY - window.scrollY + 4);
         existingNote = existingNote ? existingNote.closest('.note') : null;
-        
+
         if (existingNote && existingNote !== note && existingNote.style.left === note.style.left) {
             editNote(existingNote);
             return;
@@ -593,7 +597,7 @@ function handleInput(e) {
         const note = e.target.closest('.note');
 
         const rect = note.getBoundingClientRect();
-        let newNoteX = evenNumber(rect.right + window.scrollX + snapGridSize , snapGridSize);
+        let newNoteX = evenNumber(rect.right + window.scrollX + snapGridSize, snapGridSize);
         let newNoteY = evenNumber(rect.top + window.scrollY, snapGridSize);
 
         createNote(newNoteX, newNoteY);
@@ -606,7 +610,7 @@ function handleInput(e) {
             const note = e.target.closest('.note');
             const offset = e.shiftKey ? -1 * snapGridSize : snapGridSize;
             note.style.left = `${parseInt(note.style.left) + offset}px`
-            
+
             const input = e.target;
             const regex = /^(•|-|\[x?\]|\d+\.)\s*/;
             if (input.value.match(regex) && !e.shiftKey) {
@@ -662,7 +666,7 @@ function handleInput(e) {
             deleteSingleNote(note);
         }
     }
-        
+
 
 }
 
@@ -684,7 +688,7 @@ async function handleImagePaste(e, clipboardItem, type) {
         // Get the current scroll position
         const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        
+
         // Calculate the position for the new note
         let x = clientX + scrollLeft;
         let y = clientY + scrollTop;
@@ -700,7 +704,7 @@ async function handleImagePaste(e, clipboardItem, type) {
             currentlyEditing = null;
             clearSelection();
         }
-        
+
         createNoteWithImage(data.imageUrl, x, y);
     } catch (error) {
         console.error('Error uploading image:', error);
@@ -731,7 +735,7 @@ async function handleHtmlPaste(e, clipboardItem) {
     let offsetX, offsetY;
 
     if (currentlyEditing) {
-        offsetX = evenNumber(parseInt(currentlyEditing.style.left) + scrollLeft - minX , snapGridSize);
+        offsetX = evenNumber(parseInt(currentlyEditing.style.left) + scrollLeft - minX, snapGridSize);
         offsetY = evenNumber(parseInt(currentlyEditing.style.top) + scrollTop - minY, snapGridSize);
 
         saveNote(currentlyEditing)
@@ -739,7 +743,7 @@ async function handleHtmlPaste(e, clipboardItem) {
         clearSelection();
     } else {
         // Calculate offset to center around mouse position, including scroll offsets
-        offsetX = evenNumber(clientX + scrollLeft - minX , snapGridSize);
+        offsetX = evenNumber(clientX + scrollLeft - minX, snapGridSize);
         offsetY = evenNumber(clientY + scrollTop - minY, snapGridSize);
     }
 
@@ -772,29 +776,29 @@ async function handleMultilineTextPaste(text) {
     const lines = text.split(/\r?\n/)
         .map(line => line.trim())
         .filter(line => line.length > 0); // Skip empty lines
-    
+
     if (lines.length <= 1) return false; // Not multiline text
-    
+
     // Get scroll offsets
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
+
     let x, y;
-    
+
     if (currentlyEditing) {
         // If we're editing a note, replace it with the first line
         // and add the rest below it
         const note = currentlyEditing;
         x = parseInt(note.style.left);
         y = parseInt(note.style.top);
-        
+
         // Replace current note's content with the first line
         const input = note.querySelector('.note-input');
         if (input) {
             input.value = lines[0];
             saveNote(note);
         }
-        
+
         // Start creating new notes below the current one
         for (let i = 1; i < lines.length; i++) {
             y += snapGridSize * 2; // Move down for each new note
@@ -806,13 +810,13 @@ async function handleMultilineTextPaste(text) {
             );
             sendToBackend(newNote);
         }
-        
+
         currentlyEditing = null;
     } else {
         // If not editing, create all lines as new notes at cursor position
         x = evenNumber(clientX + scrollLeft, snapGridSize);
         y = evenNumber(clientY + scrollTop, snapGridSize);
-        
+
         lines.forEach((line, index) => {
             const yPos = y + (index * snapGridSize * 2);
             const newNote = createNoteElement(
@@ -824,7 +828,7 @@ async function handleMultilineTextPaste(text) {
             sendToBackend(newNote);
         });
     }
-    
+
     updateCanvasSize();
     return true; // Successfully handled multiline paste
 }
@@ -835,14 +839,14 @@ async function handleSingleLineTextPaste(text, e) {
         // Let the default paste action happen in the input field
         return false;
     }
-    
+
     // If not editing, create a new note at cursor position
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
+
     const x = evenNumber(clientX + scrollLeft, snapGridSize);
     const y = evenNumber(clientY + scrollTop, snapGridSize);
-    
+
     const newNote = createNoteElement(
         Date.now().toString(),
         x,
@@ -851,7 +855,7 @@ async function handleSingleLineTextPaste(text, e) {
     );
     sendToBackend(newNote);
     updateCanvasSize();
-    
+
     return true;
 }
 
@@ -861,27 +865,27 @@ async function handlePaste(e) {
     if (e.target.tagName === 'INPUT' && e.target.classList.contains('note-input')) {
         return;
     }
-    
+
     // For pastes outside of input fields
     const clipboardItems = await navigator.clipboard.read();
-    
+
     for (const clipboardItem of clipboardItems) {
         // First check for HTML paste
         if (clipboardItem.types.includes('text/html')) {
             await handleHtmlPaste(e, clipboardItem);
             return;
         }
-        
+
         // Then check for plain text, which might be multiline
         if (clipboardItem.types.includes('text/plain')) {
             const blob = await clipboardItem.getType('text/plain');
             const text = await blob.text();
-            
+
             // Handle multi-line text as a special case
             if (await handleMultilineTextPaste(text)) {
                 return;
             }
-            
+
             // Handle single line text
             if (await handleSingleLineTextPaste(text, e)) {
                 return;
@@ -906,10 +910,10 @@ document.body.addEventListener('click', (e) => {
     if (e.target.closest('#search-overlay') && !e.target.closest('.overlay-content')) {
         toggleSearchOverlay();
         fetch('/api/canvases')
-        .then(response => response.json())
-        .then(canvases => {
-            displaySearchResults(canvases);
-        });
+            .then(response => response.json())
+            .then(canvases => {
+                displaySearchResults(canvases);
+            });
     }
 })
 
@@ -917,10 +921,10 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && searchOverlay.style.display === 'block') {
         toggleSearchOverlay();
         fetch('/api/canvases')
-        .then(response => response.json())
-        .then(canvases => {
-            displaySearchResults(canvases);
-        });
+            .then(response => response.json())
+            .then(canvases => {
+                displaySearchResults(canvases);
+            });
     } else if (e.key === 'Meta' || e.key === 'Shift') {
         document.body.classList.add('meta-or-shift-pressed');
     }
@@ -945,7 +949,7 @@ document.addEventListener('mouseup', stopCanvasDragging);
 document.addEventListener('mouseup', stopBoxSelection);
 
 
-window.addEventListener("blur", function(event) {
+window.addEventListener("blur", function (event) {
     if (event.target == window) {
         stopBoxSelection();
         clearSelectionBox();

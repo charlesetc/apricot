@@ -295,7 +295,7 @@ async function shareCanvas() {
   }
 }
 
-function initializeApp() {
+async function initializeApp() {
   canvas = document.getElementById("canvas");
   isDragging = false;
   isSelecting = false;
@@ -316,6 +316,13 @@ function initializeApp() {
     exportButton.style.display = 'none';
   }
 
+  // Initialize tab system
+  initializeSidebar();
+  createCurrentTabDisplay();
+  
+  // Load tabs and set current tab
+  await loadTabs();
+  
   // Initialize selection lines
   createHorizontalLine();
   createVerticalLine();
@@ -334,7 +341,79 @@ function initializeApp() {
   });
 
   loadTitle();
-  loadNotes();
+  await loadNotes();
+  updateCurrentTabDisplay();
+}
+
+function createCurrentTabDisplay() {
+  // Remove existing display if any
+  const existingDisplay = document.getElementById('current-tab-name');
+  if (existingDisplay) {
+    existingDisplay.remove();
+  }
+  
+  // Create current tab display element
+  const tabDisplay = document.createElement('div');
+  tabDisplay.id = 'current-tab-name';
+  tabDisplay.textContent = 'Loading...';
+  
+  // Add click handler to make tab name editable
+  tabDisplay.addEventListener('click', editCurrentTabName);
+  
+  document.body.appendChild(tabDisplay);
+  return tabDisplay;
+}
+
+function editCurrentTabName() {
+  const tabDisplay = document.getElementById('current-tab-name');
+  const currentTab = getCurrentTab();
+  
+  if (!tabDisplay || !currentTab) return;
+  
+  const currentName = currentTab.name;
+  
+  // Create input element
+  const inputElement = document.createElement('input');
+  inputElement.type = 'text';
+  inputElement.value = currentName;
+  inputElement.className = 'current-tab-edit-input';
+  
+  // Replace display with input
+  tabDisplay.style.display = 'none';
+  tabDisplay.parentNode.insertBefore(inputElement, tabDisplay);
+  
+  // Focus and select
+  inputElement.focus();
+  inputElement.select();
+  
+  // Save on blur or Enter
+  const saveEdit = async () => {
+    const newName = inputElement.value.trim();
+    
+    if (newName && newName !== currentName) {
+      const updatedTab = await updateTab(currentTab.id, newName);
+      if (updatedTab) {
+        updateCurrentTabDisplay();
+        updateSidebar();
+        successToast('Tab renamed successfully');
+      }
+    } else {
+      // Revert changes
+      tabDisplay.style.display = '';
+      inputElement.remove();
+    }
+  };
+  
+  inputElement.addEventListener('blur', saveEdit);
+  inputElement.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveEdit();
+    } else if (e.key === 'Escape') {
+      tabDisplay.style.display = '';
+      inputElement.remove();
+    }
+  });
 }
 
 async function duplicateCanvas() {

@@ -3,10 +3,11 @@
 function sendToBackend(note) {
   const pre = note.querySelector("pre");
   if (!pre) return;
-  
+
   const noteData = {
     id: note.getAttribute("data-id"),
     canvas_id: canvasId,
+    tab_id: getCurrentTabId(),
     text: pre.textContent,
     x: parseInt(note.style.left),
     y: parseInt(note.style.top),
@@ -37,7 +38,7 @@ function deleteSingleNote(note) {
   if (noteId) {
     deleteNoteFromBackend(noteId);
   }
-  note.remove();  
+  note.remove();
 }
 
 function deleteSelectedNotes() {

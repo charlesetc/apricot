@@ -3,7 +3,15 @@ function loadNotes() {
         .then(response => response.json())
         .then(notes => {
             canvas.innerHTML = ''; // Clear existing notes
-            notes.forEach(note => {
+            
+            // Filter notes for current tab only
+            const currentTabId = getCurrentTabId();
+            const filteredNotes = notes.filter(note => {
+                // Show notes that belong to current tab, or notes without tab_id (for backward compatibility)
+                return note.tab_id === currentTabId || (!note.tab_id && currentTabId);
+            });
+            
+            filteredNotes.forEach(note => {
                 createNoteElement(note.id, note.x, note.y, note.text);
             });
             updateCanvasSize();
