@@ -98,19 +98,23 @@ function updateSidebar() {
 
 function showSidebar() {
   sidebarVisible = true;
+  window.sidebarVisible = sidebarVisible;
   const sidebar = document.getElementById('tab-sidebar');
   if (sidebar) {
     sidebar.style.display = 'block';
   }
+  document.body.classList.add('sidebar-open');
   updateSidebar();
 }
 
 function hideSidebar() {
   sidebarVisible = false;
+  window.sidebarVisible = sidebarVisible;
   const sidebar = document.getElementById('tab-sidebar');
   if (sidebar) {
     sidebar.style.display = 'none';
   }
+  document.body.classList.remove('sidebar-open');
 }
 
 function toggleSidebar() {
@@ -198,10 +202,11 @@ function initializeSidebar() {
   hideSidebar(); // Start with sidebar hidden
 }
 
-// Make functions global
+// Make functions and variables global
 window.createSidebar = createSidebar;
 window.updateSidebar = updateSidebar;
 window.showSidebar = showSidebar;
 window.hideSidebar = hideSidebar;
 window.toggleSidebar = toggleSidebar;
 window.initializeSidebar = initializeSidebar;
+window.sidebarVisible = sidebarVisible;
