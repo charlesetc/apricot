@@ -190,6 +190,12 @@ function handleCanvasMouseUp(e) {
 
 
         if (Math.sqrt(dx * dx + dy * dy) <= CLICK_THRESHOLD) {
+            // If sidebar is open, close it and return without creating notes
+            if (window.sidebarVisible) {
+                window.hideSidebar();
+                return;
+            }
+
             const listNoteAbove = findListNoteAbove(e.clientX, e.clientY);
             const listNoteBelow = findListNoteBelow(e.clientX, e.clientY);
 
@@ -303,8 +309,13 @@ function handleKeyDown(e) {
         document.activeElement.classList &&
         document.activeElement.classList.contains('title-edit-input');
 
-    if (isTitleEditing) {
-        // Don't intercept keydown events when editing the title
+    // Check if a tab name input is focused
+    const isTabNameEditing = document.activeElement &&
+        document.activeElement.classList &&
+        document.activeElement.classList.contains('tab-name-edit-input');
+
+    if (isTitleEditing || isTabNameEditing) {
+        // Don't intercept keydown events when editing the title or tab name
         return;
     }
 

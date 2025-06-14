@@ -22,6 +22,7 @@
   --selection-box-border-color: #007bff;
   --selection-box-bg-color: rgba(0, 123, 255, 0.1);
   --highlight-color: #007bff;
+  --sidebar-width: 250px;
 }
 
 /* Dark mode styles */
@@ -331,10 +332,15 @@ body.right-click-dragging .note {
   padding: 8px 12px;
   border-radius: 3px;
   font-size: 14px;
-  z-index: 1000;
+  z-index: 1001;
   opacity: 0;
   pointer-events: none;
   border: 1px solid var(--text-color);
+}
+
+body.sidebar-open .toast {
+  transform: translateX(calc(-1 * var(--sidebar-width)));
+  /* bottom: 15px; */
 }
 
 .toast.error {
@@ -525,9 +531,6 @@ body.right-click-dragging {
   pointer-events: none;
 }
 
-:root {
-  --sidebar-width: 250px;
-}
 
 /* Tab Sidebar Styles */
 .tab-sidebar {
@@ -544,12 +547,16 @@ body.right-click-dragging {
 }
 
 /* Shift content when sidebar is visible */
-body.sidebar-open {
+body.sidebar-open #canvas,
+body.sidebar-open #canvas-title,
+body.sidebar-open #current-tab-name, 
+body.sidebar-open .back-button,
+body.sidebar-open .toast {
   transform: translateX(var(--sidebar-width));
 }
 
 body.sidebar-open .tab-sidebar {
-  transform: translateX(calc( -1 * var(--sidebar-width)));
+  /* transform: translateX(calc( -1 * var(--sidebar-width))); */
 }
 
 body.sidebar-open #canvas {
