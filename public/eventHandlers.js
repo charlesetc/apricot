@@ -759,6 +759,7 @@ async function handleHtmlPaste(e, clipboardItem) {
     }
 
     let id_counter = 0;
+    const createdNotes = [];
 
     clearSelection();
 
@@ -774,8 +775,13 @@ async function handleHtmlPaste(e, clipboardItem) {
 
         sendToBackend(newNote);
         selectNote(newNote);
+        createdNotes.push(newNote);
     });
 
+    // Record paste action for undo if any notes were created
+    if (createdNotes.length > 0) {
+        recordPasteAction(createdNotes);
+    }
 
     tempDiv.remove();
 
@@ -795,6 +801,7 @@ async function handleMultilineTextPaste(text) {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
     let x, y;
+    const createdNotes = [];
 
     if (currentlyEditing) {
         // If we're editing a note, replace it with the first line
@@ -820,6 +827,7 @@ async function handleMultilineTextPaste(text) {
                 lines[i]
             );
             sendToBackend(newNote);
+            createdNotes.push(newNote);
         }
 
         currentlyEditing = null;
@@ -837,7 +845,13 @@ async function handleMultilineTextPaste(text) {
                 line
             );
             sendToBackend(newNote);
+            createdNotes.push(newNote);
         });
+    }
+
+    // Record paste action for undo if any notes were created
+    if (createdNotes.length > 0) {
+        recordPasteAction(createdNotes);
     }
 
     updateCanvasSize();
@@ -865,6 +879,10 @@ async function handleSingleLineTextPaste(text, e) {
         text
     );
     sendToBackend(newNote);
+    
+    // Record paste action for undo
+    recordPasteAction([newNote]);
+    
     updateCanvasSize();
 
     return true;

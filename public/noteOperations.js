@@ -375,6 +375,10 @@ function editNote(noteOrEvent) {
 function createNoteWithImage(imageUrl, x, y) {
     const note = createNoteElement(Date.now().toString(), x, y, `![Pasted Image](${imageUrl})`);
     sendToBackend(note);
+    
+    // Record paste action for undo
+    recordPasteAction([note]);
+    
     updateCanvasSize();
 }
 

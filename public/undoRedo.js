@@ -12,7 +12,8 @@ const ACTION_TYPES = {
   MOVE: 'move',
   MULTI_DELETE: 'multi_delete',
   MULTI_MOVE: 'multi_move',
-  COMMAND_CLICK: 'command_click'
+  COMMAND_CLICK: 'command_click',
+  PASTE: 'paste'
 };
 
 // Record a create note action
@@ -126,6 +127,32 @@ function recordCommandClickAction(data) {
   addToUndoStack(action);
 }
 
+// Record a paste action
+function recordPasteAction(noteElements) {
+  if (!noteElements || noteElements.length === 0) return;
+  
+  const notesData = Array.from(noteElements).map(note => {
+    const pre = note.querySelector('pre');
+    const text = pre ? pre.textContent : '';
+    
+    return {
+      noteId: note.getAttribute('data-id'),
+      position: {
+        x: parseInt(note.style.left),
+        y: parseInt(note.style.top)
+      },
+      content: text
+    };
+  });
+  
+  const action = {
+    type: ACTION_TYPES.PASTE,
+    notes: notesData
+  };
+  
+  addToUndoStack(action);
+}
+
 // Add an action to the undo stack
 function addToUndoStack(action) {
   undoStack.push(action);
@@ -185,6 +212,9 @@ async function executeUndo(action) {
     case ACTION_TYPES.COMMAND_CLICK:
       await undoCommandClick(action);
       break;
+    case ACTION_TYPES.PASTE:
+      await undoPaste(action);
+      break;
   }
   updateCanvasSize();
 }
@@ -209,6 +239,9 @@ async function executeRedo(action) {
       break;
     case ACTION_TYPES.COMMAND_CLICK:
       await redoCommandClick(action);
+      break;
+    case ACTION_TYPES.PASTE:
+      await redoPaste(action);
       break;
   }
   updateCanvasSize();
@@ -269,6 +302,16 @@ async function undoCommandClick(action) {
     if (note) {
       note.style.top = `${position.oldTop}px`;
       sendToBackend(note);
+    }
+  }
+}
+
+async function undoPaste(action) {
+  // Delete all notes that were created by the paste operation
+  for (const noteData of action.notes) {
+    const note = document.querySelector(`.note[data-id="${noteData.noteId}"]`);
+    if (note) {
+      deleteSingleNote(note);
     }
   }
 }
@@ -360,6 +403,14 @@ async function redoCommandClick(action) {
   }
 }
 
+async function redoPaste(action) {
+  // Recreate all notes that were pasted
+  for (const noteData of action.notes) {
+    const note = createNoteElement(noteData.noteId, noteData.position.x, noteData.position.y, noteData.content);
+    sendToBackend(note);
+  }
+}
+
 // Handle keyboard shortcuts for undo/redo
 function handleUndoRedoShortcuts(e) {
   if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
@@ -385,6 +436,7 @@ window.recordMultiDeleteAction = recordMultiDeleteAction;
 window.recordMoveAction = recordMoveAction;
 window.recordMultiMoveAction = recordMultiMoveAction;
 window.recordCommandClickAction = recordCommandClickAction;
+window.recordPasteAction = recordPasteAction;
 window.undo = undo;
 window.redo = redo;
 window.handleUndoRedoShortcuts = handleUndoRedoShortcuts;
