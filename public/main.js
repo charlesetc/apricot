@@ -366,7 +366,7 @@ function createCurrentTabDisplay() {
   // Add double-click handler to open sidebar and edit current tab name
   tabDisplay.addEventListener('dblclick', handleCurrentTabDoubleClick);
   
-  document.body.appendChild(tabDisplay);
+  document.getElementById('header-container').appendChild(tabDisplay);
   return tabDisplay;
 }
 
