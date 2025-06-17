@@ -71,12 +71,12 @@ const db = new sqlite3.Database('./notes.db', (err) => {
             FOREIGN KEY (canvas_id) REFERENCES canvases (id),
             FOREIGN KEY (tab_id) REFERENCES tabs (id)
         )`);
-        
+
         // Create default tab for existing canvases that don't have tabs
         db.run(`INSERT OR IGNORE INTO tabs (canvas_id, name, sort_order) 
                 SELECT id, 'default', 0 FROM canvases 
                 WHERE id NOT IN (SELECT DISTINCT canvas_id FROM tabs WHERE canvas_id IS NOT NULL)`);
-        
+
         // Update existing notes to use the default tab
         db.run(`UPDATE notes SET tab_id = (
                     SELECT tabs.id FROM tabs 
@@ -89,23 +89,23 @@ const db = new sqlite3.Database('./notes.db', (err) => {
 // Canvas endpoints
 app.post('/api/canvases', (req, res) => {
     const { name } = req.body;
-    db.run('INSERT INTO canvases (name) VALUES (?)', [name], function(err) {
+    db.run('INSERT INTO canvases (name) VALUES (?)', [name], function (err) {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
         }
-        
+
         const canvasId = this.lastID;
-        
+
         // Create default tab for the new canvas
-        db.run('INSERT INTO tabs (canvas_id, name, sort_order) VALUES (?, "default", 0)', 
-               [canvasId], function(tabErr) {
-            if (tabErr) {
-                console.error('Error creating default tab:', tabErr.message);
-                // Still return success for canvas creation even if tab creation fails
-            }
-            res.json({ id: canvasId, name });
-        });
+        db.run('INSERT INTO tabs (canvas_id, name, sort_order) VALUES (?, "default", 0)',
+            [canvasId], function (tabErr) {
+                if (tabErr) {
+                    console.error('Error creating default tab:', tabErr.message);
+                    // Still return success for canvas creation even if tab creation fails
+                }
+                res.json({ id: canvasId, name });
+            });
     });
 });
 
@@ -132,7 +132,7 @@ app.put('/api/canvases/:id', (req, res) => {
     const query = 'UPDATE canvases SET name = ? WHERE id = ?';
     const values = [name, id];
 
-    db.run(query, values, function(error) {
+    db.run(query, values, function (error) {
         if (error) {
             console.error('Error updating project:', error.message);
             return res.status(500).json({ error: 'An error occurred while updating the project' });
@@ -177,7 +177,7 @@ app.delete('/api/canvases/:id', (req, res) => {
 
     // First, delete all notes associated with this canvas
     const deleteNotesQuery = 'DELETE FROM notes WHERE canvas_id = ?';
-    db.run(deleteNotesQuery, [id], function(error) {
+    db.run(deleteNotesQuery, [id], function (error) {
         if (error) {
             console.error('Error deleting associated notes:', error.message);
             return res.status(500).json({ error: 'An error occurred while deleting associated notes' });
@@ -185,7 +185,7 @@ app.delete('/api/canvases/:id', (req, res) => {
 
         // Now delete the canvas itself
         const deleteCanvasQuery = 'DELETE FROM canvases WHERE id = ?';
-        db.run(deleteCanvasQuery, [id], function(error) {
+        db.run(deleteCanvasQuery, [id], function (error) {
             if (error) {
                 console.error('Error deleting canvas:', error.message);
                 return res.status(500).json({ error: 'An error occurred while deleting the canvas' });
@@ -218,39 +218,39 @@ app.get('/api/tabs/:canvasId', (req, res) => {
 
 app.post('/api/tabs', (req, res) => {
     const { canvas_id, name } = req.body;
-    
+
     if (!name || name.trim() === '') {
         return res.status(400).json({ error: 'Tab name cannot be empty' });
     }
-    
-    db.run('INSERT INTO tabs (canvas_id, name, sort_order) VALUES (?, ?, 0)', 
-           [canvas_id, name.trim()], function(err) {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json({ id: this.lastID, canvas_id, name: name.trim() });
-    });
+
+    db.run('INSERT INTO tabs (canvas_id, name, sort_order) VALUES (?, ?, 0)',
+        [canvas_id, name.trim()], function (err) {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            res.json({ id: this.lastID, canvas_id, name: name.trim() });
+        });
 });
 
 app.put('/api/tabs/:id', (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
-    
+
     if (!name || name.trim() === '') {
         return res.status(400).json({ error: 'Tab name cannot be empty' });
     }
-    
-    db.run('UPDATE tabs SET name = ? WHERE id = ?', [name.trim(), id], function(err) {
+
+    db.run('UPDATE tabs SET name = ? WHERE id = ?', [name.trim(), id], function (err) {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
         }
-        
+
         if (this.changes === 0) {
             return res.status(404).json({ error: 'Tab not found' });
         }
-        
+
         db.get('SELECT * FROM tabs WHERE id = ?', [id], (err, row) => {
             if (err) {
                 res.status(500).json({ error: err.message });
@@ -263,30 +263,30 @@ app.put('/api/tabs/:id', (req, res) => {
 
 app.delete('/api/tabs/:id', (req, res) => {
     const { id } = req.params;
-    
+
     // First, delete all notes in this tab
-    db.run('DELETE FROM notes WHERE tab_id = ?', [id], function(err) {
+    db.run('DELETE FROM notes WHERE tab_id = ?', [id], function (err) {
         if (err) {
             res.status(500).json({ error: err.message });
             return;
         }
-        
+
         const notesDeleted = this.changes;
-        
+
         // Now delete the tab
-        db.run('DELETE FROM tabs WHERE id = ?', [id], function(err) {
+        db.run('DELETE FROM tabs WHERE id = ?', [id], function (err) {
             if (err) {
                 res.status(500).json({ error: err.message });
                 return;
             }
-            
+
             if (this.changes === 0) {
                 return res.status(404).json({ error: 'Tab not found' });
             }
-            
-            res.json({ 
-                message: 'Tab and all its notes deleted successfully', 
-                notesDeleted: notesDeleted 
+
+            res.json({
+                message: 'Tab and all its notes deleted successfully',
+                notesDeleted: notesDeleted
             });
         });
     });
@@ -295,14 +295,14 @@ app.delete('/api/tabs/:id', (req, res) => {
 // Note endpoints
 app.post('/api/notes', (req, res) => {
     const { id, canvas_id, tab_id, text, x, y } = req.body;
-    db.run('INSERT OR REPLACE INTO notes (id, canvas_id, tab_id, text, x, y) VALUES (?, ?, ?, ?, ?, ?)', 
-           [id, canvas_id, tab_id, text, x, y], (err) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json({ message: 'Note saved successfully', id });
-    });
+    db.run('INSERT OR REPLACE INTO notes (id, canvas_id, tab_id, text, x, y) VALUES (?, ?, ?, ?, ?, ?)',
+        [id, canvas_id, tab_id, text, x, y], (err) => {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            res.json({ message: 'Note saved successfully', id });
+        });
 });
 
 app.get('/api/notes/:canvasId', (req, res) => {
@@ -347,7 +347,7 @@ app.post('/api/upload-image', upload.single('image'), (req, res) => {
 
 app.get('/export.html', (req, res) => {
     const canvasId = req.query.id;
-    
+
     if (!canvasId) {
         return res.status(400).send('Canvas ID is required.');
     }
@@ -357,17 +357,17 @@ app.get('/export.html', (req, res) => {
         if (err) {
             return res.status(500).send('Error fetching canvas: ' + err.message);
         }
-        
+
         if (!canvas) {
             return res.status(404).send('Canvas not found.');
         }
-        
+
         // Then, get all the notes for this canvas
         db.all('SELECT * FROM notes WHERE canvas_id = ?', [canvasId], (err, notes) => {
             if (err) {
                 return res.status(500).send('Error fetching notes: ' + err.message);
             }
-            
+
             // Sort notes first by x position, then by y position
             notes.sort((a, b) => {
                 if (a.x !== b.x) {
@@ -375,7 +375,7 @@ app.get('/export.html', (req, res) => {
                 }
                 return a.y - b.y;
             });
-            
+
             // Generate HTML
             let html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${canvas.name} - Apricot Export</title><style>/* Base styles */
                     body {
@@ -513,21 +513,21 @@ app.get('/export.html', (req, res) => {
                         }
                     }
                 </style></head><body><h1>${canvas.name}</h1><div class="notes-container">`;
-            
+
             notes.forEach(note => {
                 let noteContent = '';
                 let className = 'note';
-                
+
                 // Parse markdown-like content
                 if (note.text.startsWith('#')) {
                     className += ' header';
                 }
-                
+
                 // Handle bullet lists
                 if (note.text.startsWith('• ') || note.text === '•') {
                     className += ' list bullet';
                     noteContent = note.text.replace(/^• /, '');
-                } 
+                }
                 // Handle dash lists
                 else if (note.text.startsWith('- ') || note.text === '-') {
                     className += ' list dash';
@@ -550,10 +550,10 @@ app.get('/export.html', (req, res) => {
                     if (isChecked) {
                         className += ' checked';
                     }
-                    
+
                     const checkboxHtml = `<input type="checkbox" ${isChecked ? 'checked' : ''} disabled>`;
                     noteContent = note.text.replace(/^\[[xX ]?\]\s*/, '');
-                    
+
                     html += `<div class="${className}">${checkboxHtml}<span style="margin-left: 8px;">${noteContent}</span></div>`;
                     return; // Skip the default note creation at the end
                 }
@@ -568,7 +568,7 @@ app.get('/export.html', (req, res) => {
                         }
                         noteContent = `<img src="${imgSrc}" alt="Note Image">`;
                         className += ' image';
-                        
+
                         html += `<div class="${className}">${noteContent}</div>`;
                         return; // Skip the default note creation at the end
                     }
@@ -579,7 +579,7 @@ app.get('/export.html', (req, res) => {
                     if (match && match[1] && match[2]) {
                         noteContent = `<a href="${match[2]}" target="_blank">${match[1]}</a>`;
                         className += ' link';
-                        
+
                         html += `<div class="${className}">${noteContent}</div>`;
                         return; // Skip the default note creation at the end
                     }
@@ -596,13 +596,13 @@ app.get('/export.html', (req, res) => {
                 else {
                     noteContent = note.text;
                 }
-                
+
                 // Add the note to HTML
                 html += `<div class="${className}"><pre>${noteContent}</pre></div>`;
             });
-            
+
             html += `</div><footer>Exported from Apricot - ${new Date().toLocaleString()}</footer></body></html>`;
-            
+
             res.send(html);
         });
     });
@@ -611,7 +611,7 @@ app.get('/export.html', (req, res) => {
 // Endpoint to get a read-only snapshot of a canvas with embedded CSS
 app.get('/api/readonly-canvas/:id', async (req, res) => {
     const canvasId = req.params.id;
-    
+
     if (!canvasId) {
         return res.status(400).send('Canvas ID is required.');
     }
@@ -625,7 +625,7 @@ app.get('/api/readonly-canvas/:id', async (req, res) => {
                 resolve(row);
             });
         });
-        
+
         // Then, get all the notes for this canvas
         const notes = await new Promise((resolve, reject) => {
             db.all('SELECT * FROM notes WHERE canvas_id = ?', [canvasId], (err, rows) => {
@@ -633,11 +633,11 @@ app.get('/api/readonly-canvas/:id', async (req, res) => {
                 resolve(rows);
             });
         });
-        
+
         // Get CSS content
         const cssPath = path.join(__dirname, 'public', 'styles.css');
         const cssContent = fs.readFileSync(cssPath, 'utf8');
-        
+
         // Generate the HTML
         let html = `<!DOCTYPE html>
 <html lang="en">
@@ -760,22 +760,22 @@ app.get('/api/readonly-canvas/:id', async (req, res) => {
     <a href="https://github.com/charlesetc/apricot" class="back-button" target="_blank">Apricot</a>
     <div class="canvas-title">${canvas.name}</div>
     <div id="canvas">`;
-        
+
         // Add each note
         notes.forEach(note => {
             // Process note content
             let noteContent = note.text || '';
             let noteClass = 'note';
-            
+
             // Parse markdown-like content for special note types
             if (noteContent.startsWith('#')) {
                 noteClass += ' header';
             }
-            
+
             // Handle bullet lists
             if (noteContent.startsWith('• ') || noteContent === '•') {
                 noteClass += ' list bullet';
-            } 
+            }
             // Handle dash lists
             else if (noteContent.startsWith('- ') || noteContent === '-') {
                 noteClass += ' list dash';
@@ -822,14 +822,14 @@ app.get('/api/readonly-canvas/:id', async (req, res) => {
                     noteClass += ' strikethrough';
                 }
             }
-            
+
             // Add the note to HTML with positioning
             html += `
         <div class="${noteClass}" style="left: ${note.x}px; top: ${note.y}px;">
             <pre>${noteContent}</pre>
         </div>`;
         });
-        
+
         // Close the HTML
         html += `
     </div>
@@ -882,7 +882,7 @@ app.get('/api/readonly-canvas/:id', async (req, res) => {
     </script>
 </body>
 </html>`;
-        
+
         res.send(html);
     } catch (error) {
         console.error('Error generating read-only canvas:', error);
@@ -894,7 +894,7 @@ app.get('/api/readonly-canvas/:id', async (req, res) => {
 app.post('/api/share', async (req, res) => {
     try {
         const { canvasId, name, htmlContent } = req.body;
-        
+
         // Generate a unique identifier for the shared canvas
         const shareId = Math.random().toString(36).substr(2, 25);
 
@@ -904,26 +904,26 @@ app.post('/api/share', async (req, res) => {
         // Read Cloudflare credentials from .secrets.json
         const secretsPath = path.join(__dirname, '.secrets.json');
         let apiToken, accountId, namespaceId;
-        
+
         try {
             const secrets = JSON.parse(fs.readFileSync(secretsPath, 'utf8'));
             apiToken = secrets.CLOUDFLARE_API_TOKEN;
             accountId = secrets.CLOUDFLARE_ACCOUNT_ID;
             namespaceId = secrets.CLOUDFLARE_KV_NAMESPACE_ID;
-            
+
             if (!apiToken || !accountId || !namespaceId) {
-            throw new Error("Missing required Cloudflare credentials in .secrets.json");
+                throw new Error("Missing required Cloudflare credentials in .secrets.json");
             }
         } catch (error) {
             console.error("Error loading Cloudflare credentials from .secrets.json:", error.message);
             throw new Error("Failed to load Cloudflare credentials");
         }
-        
+
         // Upload the HTML content to Cloudflare KV
         const kvUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${shareId}`;
-        
+
         console.log(`Uploading to Cloudflare KV: ${kvUrl}`);
-        
+
         const uploadResponse = await fetch(kvUrl, {
             method: 'PUT',
             headers: {
@@ -932,21 +932,21 @@ app.post('/api/share', async (req, res) => {
             },
             body: htmlContent
         });
-        
+
         const uploadResult = await uploadResponse.json();
-        
+
         if (!uploadResult.success) {
             console.error('Cloudflare upload error:', uploadResult);
             throw new Error('Failed to upload content to Cloudflare: ' + JSON.stringify(uploadResult.errors));
         }
-        
+
         // Your worker's domain
         const workerDomain = 'apricot-share.inclouds.workers.dev'; // Your actual worker domain
         const shareUrl = `https://${workerDomain}/${shareId}`;
-        
+
         console.log(`Canvas ${canvasId} (${name}) shared with ID: ${shareId}`);
         console.log(`Share URL: ${shareUrl}`);
-        
+
         // Return the share URL
         res.json({
             success: true,

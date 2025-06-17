@@ -3,6 +3,7 @@ var canvas, isDragging, isSelecting, currentNote, offsetX, offsetY, canvasId;
 var selectedNotes, dragStartTime, selectionBox, mouseDownPos;
 var CLICK_THRESHOLD = 5; // pixels
 let isMultiSelect = false;
+let tabsEnabled = false;
 
 let dragStartPos = { x: 0, y: 0 };
 const DRAG_THRESHOLD = 5; // pixels
@@ -79,7 +80,7 @@ function editCanvasTitle(e) {
   inputElement.addEventListener('blur', function (e) {
     // Small delay to allow clicking on popup buttons
     setTimeout(() => {
-      saveCanvasTitle();
+      saveCanvasTitle({ currentName });
       hideSettingsPopup();
     }, 200);
   });
@@ -88,7 +89,7 @@ function editCanvasTitle(e) {
     if (e.key === 'Enter') {
       e.preventDefault();
       // Save immediately on Enter key press, don't wait for blur timeout
-      saveCanvasTitle();
+      saveCanvasTitle({ currentName });
       hideSettingsPopup();
     } else if (e.key === 'Escape') {
       titleElement.textContent = currentName;
@@ -124,6 +125,16 @@ function showSettingsPopup() {
     shareCanvas();
   });
 
+  // Add tabs toggle button
+  const tabsToggleBtn = document.createElement('button');
+  tabsToggleBtn.textContent = tabsEnabled ? 'Disable tabs' : 'Enable tabs';
+  tabsToggleBtn.className = 'popup-button';
+  tabsToggleBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    toggleTabs();
+    tabsToggleBtn.textContent = tabsEnabled ? 'Disable tabs' : 'Enable tabs';
+  });
+
   // Add duplicate button
   const duplicateBtn = document.createElement('button');
   duplicateBtn.textContent = 'Duplicate';
@@ -137,6 +148,7 @@ function showSettingsPopup() {
   // Add buttons to popup
   popup.appendChild(exportBtn);
   popup.appendChild(shareBtn);
+  popup.appendChild(tabsToggleBtn);
   popup.appendChild(duplicateBtn);
 
   // Add popup to document
@@ -155,10 +167,16 @@ function hideSettingsPopup() {
   }
 }
 
-function saveCanvasTitle() {
+function saveCanvasTitle({ currentName }) {
   const titleElement = document.getElementById('canvas-title');
   const inputElement = titleElement.querySelector('input');
   const newName = inputElement.value.trim();
+
+  if (newName === currentName) {
+    // If the name hasn't changed, just revert to original title
+    titleElement.textContent = currentName;
+    return;
+  }
 
   if (newName && newName !== '') {
     // Save to server
@@ -297,6 +315,15 @@ async function shareCanvas() {
   }
 }
 
+function loadTabsEnabledState() {
+  const saved = localStorage.getItem(`tabs-enabled-${canvasId}`);
+  return saved !== null ? saved === 'true' : false;
+}
+
+function saveTabsEnabledState() {
+  localStorage.setItem(`tabs-enabled-${canvasId}`, tabsEnabled.toString());
+}
+
 async function initializeApp() {
   canvas = document.getElementById("canvas");
   isDragging = false;
@@ -311,6 +338,9 @@ async function initializeApp() {
   if (!canvasId) {
     window.location.href = "/index.html";
   }
+
+  // Load tabs enabled state for this canvas
+  tabsEnabled = loadTabsEnabledState();
 
   // Hide the original export button as we'll show it in the settings popup
   const exportButton = document.getElementById("export-button");
@@ -354,6 +384,11 @@ function createCurrentTabDisplay() {
     existingDisplay.remove();
   }
 
+  // Only create the tab display if tabs are enabled
+  if (!tabsEnabled) {
+    return null;
+  }
+
   // Create current tab display element as a button
   const tabDisplay = document.createElement('button');
   tabDisplay.id = 'current-tab-name';
@@ -383,6 +418,21 @@ function handleCurrentTabDoubleClick(e) {
       editTabName(currentTab);
     }
   }, 100);
+}
+
+function toggleTabs() {
+  tabsEnabled = !tabsEnabled;
+  
+  // Save the state to localStorage
+  saveTabsEnabledState();
+  
+  // Recreate the current tab display to show/hide it
+  createCurrentTabDisplay();
+  
+  // Update the current tab display if tabs are now enabled
+  if (tabsEnabled) {
+    updateCurrentTabDisplay();
+  }
 }
 
 async function duplicateCanvas() {
