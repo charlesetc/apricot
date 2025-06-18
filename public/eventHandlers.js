@@ -478,9 +478,10 @@ function handleKeyDown(e) {
             clearSelection();
         }
     } else if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'S' || e.key === 's')) {
-        console.log("HI THERE");
-        e.preventDefault();
-        toggleSidebar();
+        if (tabsEnabled) {
+            e.preventDefault();
+            toggleSidebar();
+        }
     } else if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
     } else if (e.key == 'l' && (e.ctrlKey)) {
