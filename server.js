@@ -3,11 +3,26 @@ const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fetch = require('node-fetch');
+const os = require('os');
 
 const multer = require('multer');
 const fs = require('fs');
 
-const upload = multer({ dest: 'uploads/' });
+function getDataDirectory() {
+    const dataDir = path.join(os.homedir(), 'Library', 'Application Support', 'com.inclouds.apricot');
+    if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+    }
+    return dataDir;
+}
+
+const dataDir = getDataDirectory();
+const uploadsDir = path.join(dataDir, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const upload = multer({ dest: uploadsDir });
 
 const app = express();
 const port = 3003;
@@ -43,7 +58,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
     }
 }));
 
-const db = new sqlite3.Database('./notes.db', (err) => {
+const db = new sqlite3.Database(path.join(dataDir, 'notes.db'), (err) => {
     if (err) {
         console.error('Error opening database', err);
     } else {
@@ -73,16 +88,16 @@ const db = new sqlite3.Database('./notes.db', (err) => {
         )`);
 
         // Create default tab for existing canvases that don't have tabs
-        db.run(`INSERT OR IGNORE INTO tabs (canvas_id, name, sort_order) 
-                SELECT id, 'default', 0 FROM canvases 
-                WHERE id NOT IN (SELECT DISTINCT canvas_id FROM tabs WHERE canvas_id IS NOT NULL)`);
+        // db.run(`INSERT OR IGNORE INTO tabs (canvas_id, name, sort_order) 
+        //         SELECT id, 'default', 0 FROM canvases 
+        //         WHERE id NOT IN (SELECT DISTINCT canvas_id FROM tabs WHERE canvas_id IS NOT NULL)`);
 
-        // Update existing notes to use the default tab
-        db.run(`UPDATE notes SET tab_id = (
-                    SELECT tabs.id FROM tabs 
-                    WHERE tabs.canvas_id = notes.canvas_id 
-                    AND tabs.name = 'default'
-                ) WHERE tab_id IS NULL`);
+        // // Update existing notes to use the default tab
+        // db.run(`UPDATE notes SET tab_id = (
+        //             SELECT tabs.id FROM tabs 
+        //             WHERE tabs.canvas_id = notes.canvas_id 
+        //             AND tabs.name = 'default'
+        //         ) WHERE tab_id IS NULL`);
     }
 });
 
@@ -327,13 +342,16 @@ app.delete('/api/notes/:noteId', (req, res) => {
     });
 });
 
+// Serve uploaded images from Application Support directory
+app.use('/uploads', express.static(uploadsDir));
+
 app.post('/api/upload-image', upload.single('image'), (req, res) => {
     if (!req.file) {
         return res.status(400).send('No image file uploaded.');
     }
 
     const tempPath = req.file.path;
-    const targetPath = path.join(__dirname, './public/uploads/' + req.file.originalname);
+    const targetPath = path.join(uploadsDir, req.file.originalname);
 
     fs.rename(tempPath, targetPath, err => {
         if (err) {
