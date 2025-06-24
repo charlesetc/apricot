@@ -1,6 +1,6 @@
 {
   "name": "apricot-notes",
-  "version": "1.0.0",
+  "version": "0.0.8",
   "description": "A canvas note-taking app",
   "main": "server.js",
   "bin": {
@@ -9,7 +9,12 @@
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": ["notes", "canvas", "drawing", "productivity"],
+  "keywords": [
+    "notes",
+    "canvas",
+    "drawing",
+    "productivity"
+  ],
   "author": "",
   "license": "MIT",
   "files": [
