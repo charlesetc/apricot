@@ -916,20 +916,18 @@ app.post('/api/share', async (req, res) => {
         // Generate a unique identifier for the shared canvas
         const shareId = Math.random().toString(36).substr(2, 25);
 
-
-        // Yeah this is hacky but it works for now. We could have a better 
-        // abstraction around secrets in the future, should we have more.
         // Read Cloudflare credentials from .secrets.json
         const secretsPath = path.join(__dirname, '.secrets.json');
-        let apiToken, accountId, namespaceId;
+        let apiToken, accountId, namespaceId, bucketName;
 
         try {
             const secrets = JSON.parse(fs.readFileSync(secretsPath, 'utf8'));
             apiToken = secrets.CLOUDFLARE_API_TOKEN;
             accountId = secrets.CLOUDFLARE_ACCOUNT_ID;
             namespaceId = secrets.CLOUDFLARE_KV_NAMESPACE_ID;
+            bucketName = secrets.CLOUDFLARE_R2_BUCKET_NAME;
 
-            if (!apiToken || !accountId || !namespaceId) {
+            if (!apiToken || !accountId || !namespaceId || !bucketName) {
                 throw new Error("Missing required Cloudflare credentials in .secrets.json");
             }
         } catch (error) {
@@ -937,10 +935,56 @@ app.post('/api/share', async (req, res) => {
             throw new Error("Failed to load Cloudflare credentials");
         }
 
+        // Extract image paths from HTML content
+        const imageRegex = /src="\/uploads\/([^"]+)"/g;
+        const imageFilenames = [];
+        let match;
+        
+        while ((match = imageRegex.exec(htmlContent)) !== null) {
+            imageFilenames.push(match[1]);
+        }
+
+        console.log(`Found ${imageFilenames.length} images to upload:`, imageFilenames);
+
+        // Upload images to R2 bucket
+        for (const filename of imageFilenames) {
+            const localImagePath = path.join(uploadsDir, filename);
+            
+            if (fs.existsSync(localImagePath)) {
+                try {
+                    const imageBuffer = fs.readFileSync(localImagePath);
+                    const r2Url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucketName}/objects/${filename}`;
+                    
+                    console.log(`Uploading image to R2: ${filename}`);
+                    
+                    const r2Response = await fetch(r2Url, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${apiToken}`,
+                        },
+                        body: imageBuffer
+                    });
+
+                    if (!r2Response.ok) {
+                        const errorText = await r2Response.text();
+                        console.error(`Failed to upload image ${filename}:`, errorText);
+                        throw new Error(`Failed to upload image ${filename}: ${r2Response.status}`);
+                    }
+
+                    console.log(`Successfully uploaded image: ${filename}`);
+                } catch (imageError) {
+                    console.error(`Error uploading image ${filename}:`, imageError);
+                    // Continue with other images, don't fail the entire share
+                }
+            } else {
+                console.warn(`Image file not found: ${localImagePath}`);
+            }
+        }
+
         // Upload the HTML content to Cloudflare KV
         const kvUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${shareId}`;
 
-        console.log(`Uploading to Cloudflare KV: ${kvUrl}`);
+        console.log(`Uploading HTML to Cloudflare KV: ${kvUrl}`);
 
         const uploadResponse = await fetch(kvUrl, {
             method: 'PUT',
@@ -969,7 +1013,8 @@ app.post('/api/share', async (req, res) => {
         res.json({
             success: true,
             shareId: shareId,
-            shareUrl: shareUrl
+            shareUrl: shareUrl,
+            imagesUploaded: imageFilenames.length
         });
     } catch (error) {
         console.error('Error sharing canvas:', error);
