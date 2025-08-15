@@ -32,7 +32,6 @@
         }
         .tag-title {
             font-size: 24px;
-            font-weight: bold;
             margin-bottom: 5px;
         }
         .tag-count {
@@ -40,23 +39,29 @@
             font-size: 14px;
         }
         .tag-item {
-            background-color: #f0f0f0;
+            background-color: #fafafa;
             border: 2px solid transparent;
             border-radius: 4px;
             padding: 8px 12px;
             margin-bottom: 10px;
-            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .tag-item:hover .canvas-link {
+            text-decoration: underline;
         }
         .tag-item-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
+            /* margin-bottom: 5px; */
         }
         .canvas-link {
             color: var(--highlight-color);
             text-decoration: none;
-            font-weight: bold;
         }
         .canvas-link:hover {
             text-decoration: underline;
@@ -65,13 +70,14 @@
             color: #666;
             font-size: 12px;
         }
-        .back-button {
+        .tag-back-button {
+            margin-top:12px;
             color: var(--highlight-color);
             text-decoration: none;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             display: inline-block;
         }
-        .back-button:hover {
+        .tag-back-button:hover {
             text-decoration: underline;
         }
         @media (prefers-color-scheme: dark) {
@@ -90,20 +96,19 @@
 </head>
 <body>
     <div class="tag-page">
-        <a href="/index.html" class="back-button">← Back to Projects</a>
+        <a href="/index.html" class="tag-back-button">← Back to Projects</a>
         <div class="tag-header">
             <div class="tag-title">#{{tagName}}</div>
-            <div class="tag-count">{{notes.length}} canvas{{#if multipleCanvases}}es{{/if}}</div>
         </div>
         <div class="tag-list">
             {{#if notes.length}}
                 {{#each notes}}
-                <div class="tag-item">
+                <a href="/canvas.html?id={{canvas_id}}" class="tag-item">
                     <div class="tag-item-header">
-                        <a href="/canvas.html?id={{canvas_id}}" class="canvas-link">{{canvas_name}}</a>
+                        <span class="canvas-link">{{canvas_name}}</span>
                         <span class="canvas-date">{{formatDate canvas_timestamp}}</span>
                     </div>
-                </div>
+                </a>
                 {{/each}}
             {{else}}
                 <div class="tag-item">No canvases found with tag #{{tagName}}</div>

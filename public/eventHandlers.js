@@ -183,6 +183,7 @@ function handleCanvasMouseUp(e) {
     } else if (e.target.closest('.note')) {
 
         if (e.target.tagName === 'A' && !e.metaKey && !e.shiftKey) {
+            e.preventDefault();
             // Tag links open in the same window, other links open in new window
             if (e.target.classList.contains('tag-link')) {
                 window.location.href = e.target.href;

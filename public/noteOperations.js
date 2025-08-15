@@ -136,6 +136,10 @@ function handleNoteMouseUp(e) {
             // Handle command/ctrl click to insert a new note in a list
             handleCommandClickInList(e);
         } else {
+            // Don't edit if clicking on a link
+            if (e.target.tagName === 'A') {
+                return;
+            }
             editNote(e);
         }
     }
