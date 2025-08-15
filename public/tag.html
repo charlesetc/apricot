@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>#{{tagName}} - Apricot</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <style>
+        :root {
+            --highlight-color: #007bff;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --highlight-color: #005dc1;
+            }
+        }
+        
+        .tag-page {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: 'Iosevka Medium', 'Iosevka', 'Courier New', Courier, monospace;
+        }
+        .tag-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .tag-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .tag-count {
+            color: #666;
+            font-size: 14px;
+        }
+        .tag-item {
+            background-color: #f0f0f0;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+        }
+        .tag-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .canvas-link {
+            color: var(--highlight-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .canvas-link:hover {
+            text-decoration: underline;
+        }
+        .canvas-date {
+            color: #666;
+            font-size: 12px;
+        }
+        .back-button {
+            color: var(--highlight-color);
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .back-button:hover {
+            text-decoration: underline;
+        }
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a1a1a;
+                color: #f0f0f0;
+            }
+            .tag-item {
+                background-color: #2a2a2a;
+            }
+            .tag-header {
+                border-bottom-color: #333;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tag-page">
+        <a href="/index.html" class="back-button">← Back to Projects</a>
+        <div class="tag-header">
+            <div class="tag-title">#{{tagName}}</div>
+            <div class="tag-count">{{notes.length}} canvas{{#if multipleCanvases}}es{{/if}}</div>
+        </div>
+        <div class="tag-list">
+            {{#if notes.length}}
+                {{#each notes}}
+                <div class="tag-item">
+                    <div class="tag-item-header">
+                        <a href="/canvas.html?id={{canvas_id}}" class="canvas-link">{{canvas_name}}</a>
+                        <span class="canvas-date">{{formatDate canvas_timestamp}}</span>
+                    </div>
+                </div>
+                {{/each}}
+            {{else}}
+                <div class="tag-item">No canvases found with tag #{{tagName}}</div>
+            {{/if}}
+        </div>
+    </div>
+</body>
+</html>

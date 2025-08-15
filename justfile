@@ -13,6 +13,7 @@ stop: unload
 
 load: install
   launchctl load /Users/charles/Library/LaunchAgents/com.inclouds.apricot.plist
+
 start: load
 
 sleep:

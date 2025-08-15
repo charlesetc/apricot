@@ -4,6 +4,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fetch = require('node-fetch');
 const os = require('os');
+const handlebars = require('handlebars');
 
 const multer = require('multer');
 const fs = require('fs');
@@ -339,6 +340,80 @@ app.delete('/api/notes/:noteId', (req, res) => {
             return;
         }
         res.json({ message: 'Note deleted successfully', id: noteId });
+    });
+});
+
+// Register Handlebars helper for date formatting
+handlebars.registerHelper('formatDate', function(timestamp) {
+    return new Date(timestamp).toLocaleDateString();
+});
+
+function getNotesWithTag(tagName, callback) {
+    const tagPattern = `#${tagName}`;
+    db.all(`
+        SELECT n.*, c.name AS canvas_name, c.Timestamp AS canvas_timestamp
+        FROM notes n
+        JOIN canvases c ON n.canvas_id = c.id
+        WHERE n.text = ?
+        ORDER BY c.Timestamp DESC
+    `, [tagPattern], callback);
+}
+
+function loadAndCompileTemplate(templatePath, callback) {
+    fs.readFile(templatePath, 'utf8', (err, templateSource) => {
+        if (err) {
+            callback(err, null);
+            return;
+        }
+        
+        try {
+            const template = handlebars.compile(templateSource);
+            callback(null, template);
+        } catch (compileError) {
+            callback(compileError, null);
+        }
+    });
+}
+
+function renderTagPage(tagName, notes, callback) {
+    const templatePath = path.join(__dirname, 'public', 'tag.html');
+    
+    loadAndCompileTemplate(templatePath, (err, template) => {
+        if (err) {
+            callback(err, null);
+            return;
+        }
+        
+        try {
+            const html = template({
+                tagName: tagName,
+                notes: notes,
+                multipleCanvases: notes.length !== 1
+            });
+            callback(null, html);
+        } catch (renderError) {
+            callback(renderError, null);
+        }
+    });
+}
+
+app.get('/tag/:tagName', (req, res) => {
+    const tagName = req.params.tagName;
+    
+    getNotesWithTag(tagName, (err, notes) => {
+        if (err) {
+            res.status(500).send('Error loading tag: ' + err.message);
+            return;
+        }
+        
+        renderTagPage(tagName, notes, (err, html) => {
+            if (err) {
+                res.status(500).send('Error rendering page: ' + err.message);
+                return;
+            }
+            
+            res.send(html);
+        });
     });
 });
 

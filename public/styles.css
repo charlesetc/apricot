@@ -692,3 +692,8 @@ body.sidebar-open #canvas {
 #current-tab-name:hover {
   border-color: var(--highlight-color);
 }
+
+.tag-link {
+  color: var(--highlight-color);
+  font-weight: 400;
+}

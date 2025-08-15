@@ -17,7 +17,10 @@
     <string>/Users/charles/code/apricot</string>
 
     <key>KeepAlive</key>
-    <true/>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
 
     <key>RunAtLoad</key>
     <true/>

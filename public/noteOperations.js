@@ -57,9 +57,10 @@ function initializeNoteContents(note, text) {
 
     maybeCreateImage(note, text, pre);
     maybeCreateLinkNote(note, text, pre);
+    maybeCreateTagLink(note, text, pre);
     maybeCreateStrikethrough(note, text, pre);
     
-    if (text.startsWith('#')) {
+    if (text.startsWith('#') && !isTagNote(text)) {
         note.classList.add('header');
     } else {
         note.classList.remove('header');
@@ -464,6 +465,25 @@ function maybeCreateLinkNote(note, text, pre) {
         note.classList.add('link');
     } else {
         note.classList.remove('link');
+    }
+}
+
+function isTagNote(text) {
+    return /^#\w+$/.test(text.trim());
+}
+
+function maybeCreateTagLink(note, text, pre) {
+    if (isTagNote(text)) {
+        const link = document.createElement('a');
+        const tagName = text.trim().substring(1); // Remove the # symbol
+        link.href = `/tag/${tagName}`;
+        link.textContent = text.trim();
+        link.classList.add('tag-link');
+        note.appendChild(link);
+        pre.style.display = 'none';
+        note.classList.add('tag');
+    } else {
+        note.classList.remove('tag');
     }
 }
 
