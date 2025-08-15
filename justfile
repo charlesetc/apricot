@@ -11,7 +11,7 @@ unload:
   launchctl unload /Users/charles/Library/LaunchAgents/com.inclouds.apricot.plist || true
 stop: unload
 
-load:
+load: install
   launchctl load /Users/charles/Library/LaunchAgents/com.inclouds.apricot.plist
 start: load
 
