@@ -5,7 +5,7 @@ var CLICK_THRESHOLD = 5; // pixels
 let isMultiSelect = false;
 let tabsEnabled = false;
 
-let dragStartPos = { x: 0, y: 0 };
+let dragStartPos = null;
 const DRAG_THRESHOLD = 5; // pixels
 const EDGE_PROXIMITY = 20; // Pixels from left edge to show horizontal selection line
 const TOP_PROXIMITY = 20; // Pixels from top edge to show vertical selection line

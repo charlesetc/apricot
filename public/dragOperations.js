@@ -3,17 +3,17 @@
 // Variable to store positions at the start of a drag for undo functionality
 let dragStartPositions = [];
 
-function startDragging(e) {
+function startDragging(note, e) {
     isDragging = true;
-    currentNote = e.target.closest('.note');
-    if (currentNote === null) return;
-    
+    if (note === null) throw new Error("Invalid note");
+    currentNote = note;
+
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
-    offsetX = e.clientX + scrollLeft - currentNote.offsetLeft;
-    offsetY = e.clientY + scrollTop - currentNote.offsetTop;
+
+    offsetX = e.clientX + scrollLeft - note.offsetLeft;
+    offsetY = e.clientY + scrollTop - note.offsetTop;
 
     // Store original positions for undo
     dragStartPositions = [];
@@ -28,16 +28,16 @@ function startDragging(e) {
     });
 
     // If the clicked note is not in the selection, clear selection and select only this note
-    if (!selectedNotes.has(currentNote)) {
+    if (!selectedNotes.has(note)) {
         clearSelection();
-        selectNote(currentNote);
+        selectNote(note);
         
         // Update dragStartPositions for the newly selected note
         dragStartPositions = [{
-            noteId: currentNote.getAttribute('data-id'),
+            noteId: note.getAttribute('data-id'),
             oldPosition: {
-                x: parseInt(currentNote.style.left),
-                y: parseInt(currentNote.style.top)
+                x: parseInt(note.style.left),
+                y: parseInt(note.style.top)
             }
         }];
     }
@@ -49,7 +49,7 @@ function startDragging(e) {
 function dragSelectedNotes(e) {
     if (!isDragging) return;
     if (currentNote === null) return;
-    
+
     // Account for scroll offset
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -119,11 +119,6 @@ function stopDragging() {
     dragStartPositions = [];
 }
 
-// Make functions global
-window.startDragging = startDragging;
-window.dragSelectedNotes = dragSelectedNotes;
-window.stopDragging = stopDragging;
-window.snapGridSize = snapGridSize;
 function rectsIntersect(rect1, rect2) {
     return !(rect2.left > rect1.right || 
              rect2.right < rect1.left || 
@@ -145,5 +140,8 @@ function updateCanvasSize() {
     canvas.style.height = `${Math.max(maxBottom + 40000, window.innerHeight)}px`;
 }
 
+// Make functions global
 window.startDragging = startDragging;
 window.dragSelectedNotes = dragSelectedNotes;
+window.stopDragging = stopDragging;
+window.snapGridSize = snapGridSize;

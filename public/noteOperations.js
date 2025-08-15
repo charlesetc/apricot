@@ -80,7 +80,6 @@ function initializeNoteContents(note, text) {
     maybeCreateCheckbox(note, text, pre);
 }
 
-
 function handleNoteMouseDown(e) {
     if (e.button === 1) {
         return;
@@ -94,7 +93,7 @@ function handleNoteMouseDown(e) {
     if (!note) return;
 
     // Store the initial position
-    dragStartPos = { x: e.clientX, y: e.clientY };
+    dragStartPos = { x: e.clientX, y: e.clientY, note };
 
     // Add mousemove and mouseup listeners to the document
     document.addEventListener('mousemove', handleNoteDrag);
@@ -104,6 +103,7 @@ function handleNoteMouseDown(e) {
 }
 
 function handleNoteDrag(e) {
+    if (dragStartPos === null) return;
     const dx = e.clientX - dragStartPos.x;
     const dy = e.clientY - dragStartPos.y;
 
@@ -111,13 +111,17 @@ function handleNoteDrag(e) {
         // We've exceeded the drag threshold, start dragging
         document.removeEventListener('mousemove', handleNoteDrag);
         document.removeEventListener('mouseup', handleNoteMouseUp);
-        startDragging(e);
+        startDragging(dragStartPos.note, e);
+        e.stopPropagation();
     }
 }
 
 function handleNoteMouseUp(e) {
     document.removeEventListener('mousemove', handleNoteDrag);
     document.removeEventListener('mouseup', handleNoteMouseUp);
+
+    // reset the drag start pos so that we can resume creating selection boxes on the canvas
+    dragStartPos = null;
 
     const dx = e.clientX - dragStartPos.x;
     const dy = e.clientY - dragStartPos.y;

@@ -46,6 +46,7 @@ function findListNoteBelow(x, y) {
 function stopCanvasDragging() {
     document.body.classList.remove('right-click-dragging');
     isCanvasDragging = false;
+    dragStartPos = null;
 }
 
 function startCanvasDragging(e) {
@@ -125,6 +126,9 @@ function handleCanvasMouseMove(e) {
 
     if (isDragging) {
         dragSelectedNotes(e);
+    } else if (dragStartPos !== null) {
+        console.log("Drag start pos is", dragStartPos);
+        return;
     } else if (e.buttons === 1 && e.target === canvas) {
         const dx = (e.clientX + scrollLeft) - mouseDownPos.x;
         const dy = (e.clientY + scrollTop) - mouseDownPos.y;
