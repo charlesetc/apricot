@@ -116,17 +116,20 @@ function handleNoteDrag(e) {
     }
 }
 
+function isWithinDragThreshold(e) {
+    if (dragStartPos === null) return false;
+    const dx = e.clientX - dragStartPos.x;
+    const dy = e.clientY - dragStartPos.y;
+    return Math.sqrt(dx * dx + dy * dy) <= DRAG_THRESHOLD;
+}
+
 function handleNoteMouseUp(e) {
     document.removeEventListener('mousemove', handleNoteDrag);
     document.removeEventListener('mouseup', handleNoteMouseUp);
 
     // reset the drag start pos so that we can resume creating selection boxes on the canvas
-    dragStartPos = null;
 
-    const dx = e.clientX - dragStartPos.x;
-    const dy = e.clientY - dragStartPos.y;
-
-    if (Math.sqrt(dx*dx + dy*dy) <= DRAG_THRESHOLD) {
+    if (dragStartPos === null || isWithinDragThreshold(e)) {
         // This was a click, not a drag
         if (e.metaKey || e.ctrlKey) {
             // Handle command/ctrl click to insert a new note in a list
@@ -135,6 +138,8 @@ function handleNoteMouseUp(e) {
             editNote(e);
         }
     }
+
+    dragStartPos = null;
 }
 
 function handleCommandClickInList(e) {
